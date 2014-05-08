@@ -1,7 +1,55 @@
 #!/usr/bin/env python
 #
+# Copyright (c) 2014 NSONE, Inc.
+#
+# License under The MIT License (MIT). See LICENSE in project root.
+#
 
+"""
+usage: nsone [-h] [-v ...] [-s <server>] [-k <key>] [-c <name>=<value>]
+             [--version]
+             <command> [<args>...]
+
+options:
+   -v                     Increase verbosity level. Can be used more than once.
+   -c <name=value>        Define config key "name" to be "value"
+   -k, --key <key>        Use the specified API Key
+   -s, --server <server>  Use the specified server endpoint [default: api.nsone.net]
+   -h, --help             Get help!
+
+Commands:
+"""
+
+from docopt import docopt
 from nsonecli.version import VERSION
+from nsonecli.commands.base import BaseCommand
+import nsonecli.commands
 
-print "NSONE driver version %s" % VERSION
+# gather commands
+cmdList = {}
+for sym, ins in nsonecli.commands.__dict__.items():
+    if isinstance(ins, BaseCommand):
+        cmdList[sym] = ins
+
+# add to doc help
+for cname, cmd in cmdList.items():
+    __doc__ += '    %s     %s\n' % (cname, cmd.SHORT_HELP)
+
+__doc__ += "\nSee 'nsone help <command>' for more information on a " \
+           "specific command."
+
+
+if __name__ == '__main__':
+    args = docopt(__doc__,
+                  version='nsone CLI version %s' % VERSION,
+                  options_first=True)
+    print('global arguments:')
+    print(args)
+    print('command arguments:')
+
+    argv = [args['<command>']] + args['<args>']
+    if args['<command>'] in cmdList.keys():
+        print(docopt(cmdList[args['<command>']].__doc__, argv=argv))
+    else:
+        exit("%r is not a command. See 'nsone help'." % args['<command>'])
 
