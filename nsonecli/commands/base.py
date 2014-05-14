@@ -9,5 +9,7 @@ class BaseCommand:
 
     SHORT_HELP = ""
 
+    nsone = None
+
     def __init__(self):
         pass

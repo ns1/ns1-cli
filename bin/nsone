@@ -7,8 +7,7 @@
 
 """
 usage: nsone [-h] [-v ...] [-s <server>] [-k <key>] [-c <name>=<value>]
-             [--version]
-             <command> [<args>...]
+             [--version] <command> [<args>...]
 
 options:
    -v                     Increase verbosity level. Can be used more than once.
@@ -20,10 +19,14 @@ options:
 Commands:
 """
 
+import sys
 from docopt import docopt
+from nsone import NSONE
+from nsone.config import ConfigException
 from nsonecli.version import VERSION
 from nsonecli.commands.base import BaseCommand
 import nsonecli.commands
+
 
 # gather commands
 cmdList = {}
@@ -43,13 +46,30 @@ if __name__ == '__main__':
     args = docopt(__doc__,
                   version='nsone CLI version %s' % VERSION,
                   options_first=True)
-    print('global arguments:')
-    print(args)
-    print('command arguments:')
+    # print('global arguments:')
+    # print(args)
+    # print('command arguments:')
+
+    try:
+        nsone = NSONE()
+    except ConfigException as e:
+        print e.message
+        sys.exit(1)
+    except IOError as e:
+        print 'No config file was found. Either specify an API key on the ' \
+              'command line, or create %s' % NSONE.DEFAULT_CONFIG_FILE
+        sys.exit(1)
+
+    # XXX config nsone based on cmd args
+    BaseCommand.nsone = nsone
 
     argv = [args['<command>']] + args['<args>']
     if args['<command>'] in cmdList.keys():
-        print(docopt(cmdList[args['<command>']].__doc__, argv=argv))
+        svc = cmdList[args['<command>']]
+        cArgs = docopt(svc.__doc__, argv=argv)
+        svc.run(cArgs)
+    elif args['<command>'] == 'help':
+        print __doc__
     else:
         exit("%r is not a command. See 'nsone help'." % args['<command>'])
 
