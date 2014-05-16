@@ -23,6 +23,6 @@ class _qps(base.BaseCommand):
     def run(self, args):
         # print "qps run: %s" % args
         stats = self.nsone.stats()
-        print stats.qps(zone=args['-z'])
+        print(stats.qps(zone=args['-z']))
 
 qps = _qps()

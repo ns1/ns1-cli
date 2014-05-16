@@ -26,6 +26,6 @@ class _zone(base.BaseCommand):
     SHORT_HELP = "Create, update, and delete zones"
 
     def run(self, args):
-        print "zone run: " % args
+        print("zone run: " % args)
 
 zone = _zone()
