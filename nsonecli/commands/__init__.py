@@ -5,6 +5,6 @@
 #
 
 # flake8: noqa
-from qps import qps
+from .qps import qps
 # flake8: noqa
-from zone import zone
+from .zone import zone
