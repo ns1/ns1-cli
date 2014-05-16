@@ -4,10 +4,10 @@
 # License under The MIT License (MIT). See LICENSE in project root.
 #
 
-import base
+from .base import BaseCommand
 
 
-class _zone(base.BaseCommand):
+class _zone(BaseCommand):
 
     """
     usage: nsone zone [-z <zone>] [action]

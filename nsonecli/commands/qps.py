@@ -4,10 +4,10 @@
 # License under The MIT License (MIT). See LICENSE in project root.
 #
 
-import base
+from .base import BaseCommand
 
 
-class _qps(base.BaseCommand):
+class _qps(BaseCommand):
 
     """
     usage: nsone qps [-z <zone>] [-t <type>] [-d <domain>]
