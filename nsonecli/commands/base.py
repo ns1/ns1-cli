@@ -24,7 +24,6 @@ class BaseCommand:
     def __init__(self):
         pass
 
-
     def jsonOut(self, d):
         print(json.dumps(d))
 
@@ -32,8 +31,8 @@ class BaseCommand:
         print(msg)
 
     def isTextFormat(self):
-        return self.nsone.config.get('cli',{}).\
-                   get('output_format','text') == 'text'
+        return self.nsone.config.get('cli', {}).get('output_format',
+                                                    'text') == 'text'
 
     def ppText(self, d):
         import collections
