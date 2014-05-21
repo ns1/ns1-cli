@@ -7,13 +7,14 @@
 
 """
 usage: nsone [-h] [-v ...] [-s <server>] [-k <key>] [-c <name>=<value>]
-             [--version] <command> [<args>...]
+             [-f <format>] [--version] <command> [<args>...]
 
 options:
    -v                     Increase verbosity level. Can be used more than once.
    -c <name=value>        Define config key "name" to be "value"
    -k, --key <key>        Use the specified API Key
-   -s, --server <server>  Use the specified server endpoint [default: api.nsone.net]
+   -s, --server <server>  Use the specified server endpoint
+   -f, --format <format>  Output format: 'text' or 'json'
    -h, --help             Get help!
 
 Commands:
@@ -24,7 +25,7 @@ from docopt import docopt
 from nsone import NSONE
 from nsone.config import ConfigException
 from nsonecli.version import VERSION
-from nsonecli.commands.base import BaseCommand
+from nsonecli.commands.base import BaseCommand, CommandException
 import nsonecli.commands
 
 
@@ -56,20 +57,34 @@ if __name__ == '__main__':
         print(e.message)
         sys.exit(1)
     except IOError as e:
-        print('No config file was found. Either specify an API key on the ' \
+        print('No config file was found. Either specify an API key on the '
               'command line, or create %s' % NSONE.DEFAULT_CONFIG_FILE)
         sys.exit(1)
 
-    # XXX config nsone based on cmd args
+    # do config overrides in nsone based on cmd args
+    if args['--format']:
+        nsone.config['cli']['output_format'] = args['--format']
+
+    # do defaults
+    if 'output_format' not in nsone.config.get('cli', {}):
+        nsone.config['cli']['output_format'] = 'text'
+
     BaseCommand.nsone = nsone
 
-    argv = [args['<command>']] + args['<args>']
-    if args['<command>'] in cmdList.keys():
-        svc = cmdList[args['<command>']]
-        cArgs = docopt(svc.__doc__, argv=argv)
-        svc.run(cArgs)
-    elif args['<command>'] == 'help':
+    cmd = args['<command>']
+    cmdArgs = args['<args>']
+    subArgv = [cmd] + cmdArgs
+    # print "%s | %s | %s" % (cmd, cmdArgs, subArgv)
+    if cmd in cmdList.keys():
+        svc = cmdList[cmd]
+        subArgs = docopt(svc.__doc__, argv=subArgv)
+        try:
+            svc.run(subArgs)
+        except CommandException as e:
+            print(e.message)
+            sys.exit(1)
+    elif cmd == 'help':
         print(__doc__)
     else:
-        exit("%r is not a command. See 'nsone help'." % args['<command>'])
+        exit("%r is not a command. See 'nsone help'." % cmd)
 
