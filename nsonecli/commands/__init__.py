@@ -8,3 +8,5 @@
 from .qps import qps
 # flake8: noqa
 from .zone import zone
+# flake8: noqa
+from .help import help

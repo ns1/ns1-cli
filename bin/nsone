@@ -7,25 +7,29 @@
 
 """
 usage: nsone [-h] [-v ...] [-s <server>] [-k <key>] [-c <name>=<value>]
-             [-f <format>] [--version] <command> [<args>...]
+             [-f <format>] [--version] [<command>] [<args>...]
 
-options:
+Options:
    -v                     Increase verbosity level. Can be used more than once.
    -c <name=value>        Define config key "name" to be "value"
    -k, --key <key>        Use the specified API Key
    -s, --server <server>  Use the specified server endpoint
    -f, --format <format>  Output format: 'text' or 'json'
-   -h, --help             Get help!
+   -h, --help             Show main usage help
+
+If no command is specified, the NSONE console is opened to accept interactive
+commands.
 
 Commands:
 """
 
 import sys
-from docopt import docopt
+from docopt import docopt, DocoptExit
 from nsone import NSONE
 from nsone.config import ConfigException
 from nsonecli.version import VERSION
 from nsonecli.commands.base import BaseCommand, CommandException
+from nsonecli.repl import NSONERepl
 import nsonecli.commands
 
 
@@ -35,17 +39,26 @@ for sym, ins in nsonecli.commands.__dict__.items():
     if isinstance(ins, BaseCommand):
         cmdList[sym] = ins
 
-# add to doc help
-for cname, cmd in cmdList.items():
-    __doc__ += '    %s     %s\n' % (cname, cmd.SHORT_HELP)
+# special case: give the full command list to help command so it can display
+# usage for all commands
+cmdList['help'].setCmdList(cmdList)
 
+# add to doc help
+cmdListDoc = ''
+for cname, cmd in cmdList.items():
+    # XXX fix formatting here
+    cmdListDoc += '    %s     %s\n' % (cname, cmd.SHORT_HELP)
+
+__doc__ += cmdListDoc
 __doc__ += "\nSee 'nsone help <command>' for more information on a " \
            "specific command."
 
 
+BANNER = 'nsone CLI version %s' % VERSION
+
 if __name__ == '__main__':
     args = docopt(__doc__,
-                  version='nsone CLI version %s' % VERSION,
+                  version=BANNER,
                   options_first=True)
     # print('global arguments:')
     # print(args)
@@ -72,19 +85,30 @@ if __name__ == '__main__':
     BaseCommand.nsone = nsone
 
     cmd = args['<command>']
+
+    if not cmd:
+        repl = NSONERepl(cmdListDoc, cmdList)
+        repl.interact(BANNER)
+        sys.exit(0)
+
     cmdArgs = args['<args>']
     subArgv = [cmd] + cmdArgs
     # print "%s | %s | %s" % (cmd, cmdArgs, subArgv)
     if cmd in cmdList.keys():
         svc = cmdList[cmd]
-        subArgs = docopt(svc.__doc__, argv=subArgv)
+        try:
+            subArgs = docopt(svc.__doc__, argv=subArgv)
+        except DocoptExit as e:
+            if cmd == 'help':
+                print(__doc__)
+            else:
+                print(e.usage)
+            sys.exit(1)
         try:
             svc.run(subArgs)
         except CommandException as e:
             print(e.message)
             sys.exit(1)
-    elif cmd == 'help':
-        print(__doc__)
     else:
         exit("%r is not a command. See 'nsone help'." % cmd)
 
