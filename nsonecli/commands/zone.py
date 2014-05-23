@@ -16,7 +16,7 @@ class _zone(BaseCommand):
     actions:
        list      List all active zones
        create    Create the specified zone
-       retrieve  Get zone details
+       info      Get zone details
        update    Update the details of the specified zone
        delete    Delete a zone and all records it contains
 
@@ -34,7 +34,7 @@ class _zone(BaseCommand):
 
         if action == 'list':
             self.list()
-        elif action == 'retrieve':
+        elif action == 'info':
             self.retrieve()
         else:
             print("unknown zone command: %s" % action)

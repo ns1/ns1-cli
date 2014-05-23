@@ -10,6 +10,7 @@ usage: nsone> <command> [<args>...]
 Commands:
 """
 
+import readline
 import code
 from docopt import docopt, DocoptExit
 from nsonecli.commands.base import CommandException
@@ -28,7 +29,7 @@ class NSONERepl(code.InteractiveConsole):
         intercept nsone commands and run them
         """
         args = docopt(self._doc,
-                      argv=source,
+                      argv=str(source).split(' '),
                       options_first=True)
         # print args
         cmd = args['<command>']
@@ -57,7 +58,7 @@ class NSONERepl(code.InteractiveConsole):
         else:
             # run as normal python
             # code.InteractiveConsole.runsource(self, source, filename, symbol)
-            print("unknown command: try 'help'")
+            print("unknown command '%s': try 'help'" % cmd)
 
     def raw_input(self, prompt):
         return code.InteractiveConsole.raw_input(self, prompt='nsone> ')

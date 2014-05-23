@@ -28,7 +28,7 @@ class _help(BaseCommand):
     def run(self, args):
         cmd = args['COMMAND']
         if cmd not in self._cmdList:
-            self.out('%s is an unknown command')
+            self.out('%s is an unknown command' % cmd)
         else:
             self.out(self._cmdList[cmd].__doc__)
 

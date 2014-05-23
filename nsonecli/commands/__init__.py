@@ -10,3 +10,5 @@ from .qps import qps
 from .zone import zone
 # flake8: noqa
 from .help import help
+# flake8: noqa
+from .config import config
