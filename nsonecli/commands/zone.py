@@ -10,8 +10,7 @@ from .base import BaseCommand, CommandException
 class _zone(BaseCommand):
 
     """
-    usage: nsone zone <action> [ZONE]
-
+    usage: nsone zone (list|info|create|update|delete) [ZONE]
 
     actions:
        list      List all active zones
@@ -28,20 +27,17 @@ class _zone(BaseCommand):
 
     def run(self, args):
         # print("zone run: %s" % args)
-        action = args['<action>']
         self._zoneAPI = self.nsone.zones()
         self._zone = args['ZONE']
 
-        if action == 'list':
+        if args['list']:
             self.list()
-        elif action == 'info':
-            self.retrieve()
-        else:
-            print("unknown zone command: %s" % action)
+        elif args['info']:
+            self.info()
 
-    def retrieve(self):
+    def info(self):
         if not self._zone:
-            raise CommandException(self, 'retrieve actions requires a zone')
+            raise CommandException(self, 'info requires a target zone')
         zdata = self._zoneAPI.retrieve(self._zone)
         if not self.isTextFormat():
             self.jsonOut(zdata)
@@ -52,10 +48,11 @@ class _zone(BaseCommand):
             self.out('NO RECORDS')
             return
         self.out('RECORDS:')
+        longestRec = self._longest([r['domain'] for r in records])
         for r in records:
-            self.out('%s %s %s' % (r['domain'],
-                                   r['type'],
-                                   ', '.join(r['short_answers'])))
+            self.out(' %s  %s  %s' % (r['domain'].ljust(longestRec),
+                                      r['type'].ljust(5),
+                                      ', '.join(r['short_answers'])))
 
     def list(self):
         zlist = self._zoneAPI.list()

@@ -34,13 +34,20 @@ class BaseCommand:
         return self.nsone.config.get('cli', {}).get('output_format',
                                                     'text') == 'text'
 
+    def _longest(self, l):
+        longest = 0
+        for v in l:
+            longest = max(longest, len(v))
+        return longest
+
     def ppText(self, d):
         import collections
         od = collections.OrderedDict(sorted(d.items()))
+        longest = self._longest([k for (k, v) in od.items()])
         for (k, v) in od.items():
             if type(v) is str:
-                self.out('%s: %s' % (k, v))
+                self.out('%s: %s' % (k.ljust(longest), v))
             elif type(v) is list or type(v) is tuple:
-                self.out('%s: %s' % (k, ', '.join(v)))
+                self.out('%s: %s' % (k.ljust(longest), ', '.join(v)))
             else:
-                self.out('%s: %s' % (k, str(v)))
+                self.out('%s: %s' % (k.ljust(longest), str(v)))

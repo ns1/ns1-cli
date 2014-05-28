@@ -10,20 +10,27 @@ from .base import BaseCommand
 class _config(BaseCommand):
 
     """
-    usage: nsone config <action>
+    usage: nsone config [show|set]
 
     Actions:
        show     Show the existing config
+       set      Set a configuration variable
 
     Arguments:
 
     """
 
-    SHORT_HELP = "Show, load, save and set config options"
+    SHORT_HELP = "View and manipulate configuration settings"
 
     def run(self, args):
-        action = args['<action>']
-        self.out(self.nsone.config)
+        if args['show']:
+            self.show()
+        elif args['set']:
+            self.set()
+        else:
+            self.show()
 
+    def show(self):
+        self.out(self.nsone.config)
 
 config = _config()

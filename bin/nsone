@@ -31,6 +31,7 @@ from nsonecli.version import VERSION
 from nsonecli.commands.base import BaseCommand, CommandException
 from nsonecli.repl import NSONERepl
 import nsonecli.commands
+from nsone.rest.service import ServiceException
 
 
 # gather commands
@@ -46,8 +47,7 @@ cmdList['help'].setCmdList(cmdList)
 # add to doc help
 cmdListDoc = ''
 for cname, cmd in cmdList.items():
-    # XXX fix formatting here
-    cmdListDoc += '    %s     %s\n' % (cname, cmd.SHORT_HELP)
+    cmdListDoc += '   %s%s\n' % (cname.ljust(10), cmd.SHORT_HELP)
 
 __doc__ += cmdListDoc
 __doc__ += "\nSee 'nsone help <command>' for more information on a " \
@@ -106,6 +106,8 @@ if __name__ == '__main__':
             sys.exit(1)
         try:
             svc.run(subArgs)
+        except ServiceException as e:
+            print('REST API error: %s' % e.message)
         except CommandException as e:
             print(e.message)
             sys.exit(1)

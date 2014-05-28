@@ -15,14 +15,27 @@ import code
 from docopt import docopt, DocoptExit
 from nsonecli.commands.base import CommandException
 from nsone.rest.service import ServiceException
+import os
+import atexit
 
 
 class NSONERepl(code.InteractiveConsole):
+
+    HISTORY_FILE = '~/.nsone_history'
+    HISTORY_LEN = 1000
 
     def __init__(self, cmdListDoc, cmdList):
         code.InteractiveConsole.__init__(self)
         self._doc = __doc__ + cmdListDoc
         self._cmdList = cmdList
+        history_file = os.path.expanduser(self.HISTORY_FILE)
+        try:
+            readline.read_history_file(history_file)
+        except IOError:
+            pass
+        readline.parse_and_bind("tab: complete")
+        readline.set_history_length(self.HISTORY_LEN)
+        atexit.register(readline.write_history_file, history_file)
 
     def runsource(self, source, filename="<input>", symbol="single"):
         """
@@ -45,12 +58,13 @@ class NSONERepl(code.InteractiveConsole):
                 if cmd == 'help':
                     print(self._doc)
                 else:
-                    print(e.usage)
+                    # in repl, replace the require preceding 'nsone' with ''
+                    print(e.usage.replace(' nsone', ''))
                 return
             try:
                 svc.run(subArgs)
             except ServiceException as e:
-                print(e.message)
+                print('REST API error: %s' % e.message)
                 return
             except CommandException as e:
                 print(e.message)
