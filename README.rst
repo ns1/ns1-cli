@@ -8,6 +8,11 @@ NSONE Command Line Interface (CLI)
 .. image:: https://travis-ci.org/nsone/nsone-cli.png
         :target: https://travis-ci.org/nsone/nsone-cli
 
+Status
+======
+Initial development, not for production use yet.
+
+
 Installation
 ============
 

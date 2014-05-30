@@ -6,16 +6,18 @@
 #
 
 """
-usage: nsone [-h] [-v ...] [-s <server>] [-k <key>] [-c <name>=<value>]
-             [-f <format>] [--version] [<command>] [<args>...]
+usage: nsone [-h] [-v ...] [-e <server>] [-k <key>] [-c <name>=<value>]
+             [-f <format>] [--ignore-ssl-errors] [--version]
+             [<command>] [<args>...]
 
 Options:
-   -v                     Increase verbosity level. Can be used more than once.
-   -c <name=value>        Define config key "name" to be "value"
-   -k, --key <key>        Use the specified API Key
-   -s, --server <server>  Use the specified server endpoint
-   -f, --format <format>  Output format: 'text' or 'json'
-   -h, --help             Show main usage help
+   -v                      Increase verbosity level. Can be used more than once.
+   -c <name=value>         Define config key "name" to be "value"
+   -k, --key <key>         Use the specified API Key
+   -e, --endpoint <server> Use the specified server endpoint
+   -f, --format <format>   Output format: 'text' or 'json'
+   --ignore-ssl-errors     Ignore SSL certificate errors
+   -h, --help              Show main usage help
 
 If no command is specified, the NSONE console is opened to accept interactive
 commands.
@@ -81,6 +83,12 @@ if __name__ == '__main__':
     # do defaults
     if 'output_format' not in nsone.config.get('cli', {}):
         nsone.config['cli']['output_format'] = 'text'
+
+    if args['--endpoint']:
+        nsone.config['endpoint'] = args['--endpoint']
+
+    if args['--ignore-ssl-errors']:
+        nsone.config['ignore-ssl-errors'] = args['--ignore-ssl-errors']
 
     BaseCommand.nsone = nsone
 

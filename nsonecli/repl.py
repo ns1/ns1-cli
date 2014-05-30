@@ -16,6 +16,7 @@ from docopt import docopt, DocoptExit
 from nsonecli.commands.base import CommandException
 from nsone.rest.service import ServiceException
 import os
+import sys
 import atexit
 
 
@@ -72,6 +73,8 @@ class NSONERepl(code.InteractiveConsole):
         else:
             # run as normal python
             # code.InteractiveConsole.runsource(self, source, filename, symbol)
+            if cmd == 'quit' or cmd == 'exit':
+                sys.exit(0)
             print("unknown command '%s': try 'help'" % cmd)
 
     def raw_input(self, prompt):
