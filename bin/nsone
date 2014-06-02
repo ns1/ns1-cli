@@ -6,13 +6,12 @@
 #
 
 """
-usage: nsone [-h] [-v ...] [-e <server>] [-k <key>] [-c <name>=<value>]
+usage: nsone [-h] [-v ...] [-e <server>] [-k <key>]
              [-f <format>] [--ignore-ssl-errors] [--version]
              [<command>] [<args>...]
 
 Options:
    -v                      Increase verbosity level. Can be used more than once.
-   -c <name=value>         Define config key "name" to be "value"
    -k, --key <key>         Use the specified API Key
    -e, --endpoint <server> Use the specified server endpoint
    -f, --format <format>   Output format: 'text' or 'json'
@@ -28,7 +27,7 @@ Commands:
 import sys
 from docopt import docopt, DocoptExit
 from nsone import NSONE
-from nsone.config import ConfigException
+from nsone.config import Config, ConfigException
 from nsonecli.version import VERSION
 from nsonecli.commands.base import BaseCommand, CommandException
 from nsonecli.repl import NSONERepl
@@ -66,14 +65,21 @@ if __name__ == '__main__':
     # print(args)
     # print('command arguments:')
 
+    # if they specified an api key, use a custom config
+    config = None
+    if args['--key']:
+        config = Config()
+        # this will save a .nsone with this key if one doesn't already exist
+        config.createFromAPIKey(args['--key'], maybeWriteDefault=True)
+
     try:
-        nsone = NSONE()
+        nsone = NSONE(config=config)
     except ConfigException as e:
         print(e.message)
         sys.exit(1)
     except IOError as e:
-        print('No config file was found. Either specify an API key on the '
-              'command line, or create %s' % NSONE.DEFAULT_CONFIG_FILE)
+        print('No config file was found. Either specify an API key (with -k) '
+              'on the command line, or create %s' % NSONE.DEFAULT_CONFIG_FILE)
         sys.exit(1)
 
     # do config overrides in nsone based on cmd args
