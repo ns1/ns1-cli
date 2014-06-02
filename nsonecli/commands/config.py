@@ -32,6 +32,7 @@ class _config(BaseCommand):
     def key(self, keyid):
         self.nsone.config.useKeyID(keyid)
         self.out('Using Key: %s' % keyid)
+        self.out('Endpoint: %s' % self.nsone.config.getEndpoint())
 
     def show(self):
         self.out('Current Key: %s' % self.nsone.config.getCurrentKeyID())

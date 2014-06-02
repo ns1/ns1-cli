@@ -14,6 +14,7 @@ class _zone(BaseCommand):
 
     actions:
        list      List all active zones
+       import    Create a new zone by importing it from a zone file
        create    Create the specified zone
        info      Get zone details
        update    Update the details of the specified zone
@@ -34,6 +35,14 @@ class _zone(BaseCommand):
             self.list()
         elif args['info']:
             self.info()
+        elif args['delete']:
+            self.delete()
+
+    def delete(self):
+        if not self._zone:
+            raise CommandException(self, 'delete requires a target zone')
+        # XXX check writeLock
+        self._zoneAPI.delete(self._zone)
 
     def info(self):
         if not self._zone:

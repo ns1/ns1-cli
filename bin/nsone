@@ -95,8 +95,10 @@ if __name__ == '__main__':
     cmd = args['<command>']
 
     if not cmd:
+        info = "\nType 'help' for help\n\nCurrent Key: %s\nEndpoint: %s" % \
+               (nsone.config.getCurrentKeyID(), nsone.config.getEndpoint())
         repl = NSONERepl(cmdListDoc, cmdList)
-        repl.interact(BANNER)
+        repl.interact(BANNER + info)
         sys.exit(0)
 
     cmdArgs = args['<args>']
