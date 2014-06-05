@@ -14,7 +14,7 @@ import readline
 import code
 from docopt import docopt, DocoptExit
 from nsonecli.commands.base import CommandException
-from nsone.rest.service import ServiceException
+from nsone.rest.resource import ResourceException
 import os
 import sys
 import atexit
@@ -64,7 +64,7 @@ class NSONERepl(code.InteractiveConsole):
                 return
             try:
                 svc.run(subArgs)
-            except ServiceException as e:
+            except ResourceException as e:
                 print('REST API error: %s' % e.message)
                 return
             except CommandException as e:
