@@ -34,6 +34,15 @@ class BaseCommand:
         return self.nsone.config.get('cli', {}).get('output_format',
                                                     'text') == 'text'
 
+    def checkWriteLock(self, args):
+        if self.isWriteLocked(args['ZONE']) and not args['-f']:
+            raise CommandException(self, 'Zone %s is write locked. '
+                                         'Use -f to override.' % args['ZONE'])
+
+    def isWriteLocked(self, zone=None):
+        # XXX support doing something with zone
+        return self.nsone.config.isKeyWriteLocked()
+
     def _longest(self, l):
         longest = 0
         for v in l:
@@ -48,6 +57,7 @@ class BaseCommand:
             if type(v) is str:
                 self.out('%s: %s' % (k.ljust(longest), v))
             elif type(v) is list or type(v) is tuple:
-                self.out('%s: %s' % (k.ljust(longest), ', '.join(v)))
+                str_v = [str(x) for x in v]
+                self.out('%s: %s' % (k.ljust(longest), ', '.join(str_v)))
             else:
                 self.out('%s: %s' % (k.ljust(longest), str(v)))

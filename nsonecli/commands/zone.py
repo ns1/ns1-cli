@@ -4,27 +4,32 @@
 # License under The MIT License (MIT). See LICENSE in project root.
 #
 
-from .base import BaseCommand, CommandException
+from .base import BaseCommand
 
 
 class _zone(BaseCommand):
 
     """
-    usage: nsone zone (list|info|create|update|delete) [ZONE]
+    usage: nsone zone list
+           nsone zone info ZONE
+           nsone zone create ZONE [options]
+           nsone zone delete [-f] ZONE
 
-    actions:
+    Options:
+       --refresh N  SOA Refresh
+       --retry N    SOA Retry
+       --expiry N   SOA Expiry
+       --nx_ttl N   SOA NX TTL
+       -f           Force: override the write lock if one exists
+
+    Zone Actions:
        list      List all active zones
-       import    Create a new zone by importing it from a zone file
-       create    Create the specified zone
        info      Get zone details
-       update    Update the details of the specified zone
+       create    Create a new zone
        delete    Delete a zone and all records it contains
-
-    If ZONE is specified, the action is limited to the target zone specified.
-
     """
 
-    SHORT_HELP = "Create, retrieve, update, and delete zones"
+    SHORT_HELP = "Create, retrieve, update, and delete zone SOA data"
 
     def run(self, args):
         # print("zone run: %s" % args)
@@ -36,18 +41,11 @@ class _zone(BaseCommand):
         elif args['info']:
             self.info()
         elif args['delete']:
-            self.delete()
+            self.delete(args)
+        elif args['create']:
+            self.create(args)
 
-    def delete(self):
-        if not self._zone:
-            raise CommandException(self, 'delete requires a target zone')
-        # XXX check writeLock
-        self._zoneAPI.delete(self._zone)
-
-    def info(self):
-        if not self._zone:
-            raise CommandException(self, 'info requires a target zone')
-        zdata = self._zoneAPI.retrieve(self._zone)
+    def _printZoneModel(self, zdata):
         if not self.isTextFormat():
             self.jsonOut(zdata)
             return
@@ -62,6 +60,22 @@ class _zone(BaseCommand):
             self.out(' %s  %s  %s' % (r['domain'].ljust(longestRec),
                                       r['type'].ljust(5),
                                       ', '.join(r['short_answers'])))
+
+    def create(self, args):
+        zdata = self._zoneAPI.create(self._zone,
+                                     refresh=args['--refresh'],
+                                     retry=args['--retry'],
+                                     expiry=args['--expiry'],
+                                     nx_ttl=args['--nx_ttl'])
+        self._printZoneModel(zdata)
+
+    def delete(self, args):
+        self.checkWriteLock(args)
+        self._zoneAPI.delete(self._zone)
+
+    def info(self):
+        zdata = self._zoneAPI.retrieve(self._zone)
+        self._printZoneModel(zdata)
 
     def list(self):
         zlist = self._zoneAPI.list()
