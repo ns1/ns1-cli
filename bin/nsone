@@ -79,7 +79,7 @@ if __name__ == '__main__':
         sys.exit(1)
     except IOError as e:
         print('No config file was found. Either specify an API key (with -k) '
-              'on the command line, or create %s' % NSONE.DEFAULT_CONFIG_FILE)
+              'on the command line, or create %s' % Config.DEFAULT_CONFIG_FILE)
         sys.exit(1)
 
     # do config overrides in nsone based on cmd args
