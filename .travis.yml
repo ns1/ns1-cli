@@ -1,11 +1,13 @@
 language: python
 python:
-  - "2.7"
-  - "3.3"
-# command to run tests
-script: "nosetests -v"
+- '2.7'
+- '3.3'
+script: nosetests -v
 install:
-  - pip install -r requirements.txt
-  - pip install flake8 --use-mirrors
+- pip install -r requirements.txt
+- pip install flake8 --use-mirrors
 before_script:
-  - flake8 .
+- flake8 .
+notifications:
+  slack:
+    secure: TUp8g4d5U93AQikzSy3ocLIgm69Vbn41RYUppW9XjluAM3IlNU1WVkEQNfy0KmVSA4Su7UAkQ0Z7O8wUU7aSr5bGRj7vWa1ryaMRS+hzJxc4dLEfczNG2IyedcO1+zdWvSGOYyK8KvRPyI7W8rnGLMg1iJ5ZvxxV4IiVwBSURR0=
