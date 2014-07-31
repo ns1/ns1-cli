@@ -17,7 +17,8 @@ class _record(BaseCommand):
     Options:
        --ttl N                          TTL
        --use-client-subnet BOOL         Set use of client-subnet EDNS option
-       -f                               Force: override the write lock if one exists
+       -f                               Force: override the write lock if one
+                                        exists
 
     Record Actions:
        info      Get record details
@@ -53,12 +54,12 @@ class _record(BaseCommand):
 
     def set(self, args):
         self.checkWriteLock(args)
+        csubnet = bool(args['--use-client-subnet'])
         out = self._recordAPI.update(self._zone,
                                      self._domain,
                                      self._type,
                                      ttl=args['--ttl'],
-                                     use_csubnet=
-                                     bool(args['--use-client-subnet']))
+                                     use_csubnet=csubnet)
         self._printRecordModel(out)
 
     def info(self):

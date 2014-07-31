@@ -97,11 +97,11 @@ class NSONERepl(code.InteractiveConsole):
         Otherwise try to call complete_<command> to get list of completions.
         """
         if state == 0:
-            origline = readline.get_line_buffer()
-            line = origline.lstrip()
-            stripped = len(origline) - len(line)
-            begidx = readline.get_begidx() - stripped
-            endidx = readline.get_endidx() - stripped
+            # origline = readline.get_line_buffer()
+            # line = origline.lstrip()
+            # stripped = len(origline) - len(line)
+            # begidx = readline.get_begidx() - stripped
+            # endidx = readline.get_endidx() - stripped
 
             # self.completion_matches = compfunc(text, line, begidx, endidx)
             self.completion_matches = []
