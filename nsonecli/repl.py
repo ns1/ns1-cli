@@ -34,8 +34,13 @@ class NSONERepl(code.InteractiveConsole):
             readline.read_history_file(history_file)
         except IOError:
             pass
-        readline.parse_and_bind("tab: complete")
         readline.set_history_length(self.HISTORY_LEN)
+        readline.set_completer(self.complete)
+        if 'libedit' in readline.__doc__:
+            # sigh, apple
+            readline.parse_and_bind("bind ^I rl_complete")
+        else:
+            readline.parse_and_bind("tab: complete")
         atexit.register(readline.write_history_file, history_file)
 
     def runsource(self, source, filename="<input>", symbol="single"):
@@ -51,6 +56,11 @@ class NSONERepl(code.InteractiveConsole):
         if type(cmdArgs) is not list:
             cmdArgs = [cmdArgs]
         subArgv = [cmd] + cmdArgs
+        # ls command == 'zone list'
+        if cmd == 'ls':
+            cmd = 'zone'
+            subArgv = ['zone', 'list']
+        #
         if cmd in self._cmdList.keys():
             svc = self._cmdList[cmd]
             try:
@@ -71,7 +81,7 @@ class NSONERepl(code.InteractiveConsole):
                 print(e.message)
                 return
         else:
-            # run as normal python
+            # run as normal python?
             # code.InteractiveConsole.runsource(self, source, filename, symbol)
             if cmd == 'quit' or cmd == 'exit':
                 sys.exit(0)
@@ -79,3 +89,23 @@ class NSONERepl(code.InteractiveConsole):
 
     def raw_input(self, prompt):
         return code.InteractiveConsole.raw_input(self, prompt='nsone> ')
+
+    def complete(self, text, state):
+        """Return the next possible completion for 'text'.
+
+        If a command has not been entered, then complete against command list.
+        Otherwise try to call complete_<command> to get list of completions.
+        """
+        if state == 0:
+            origline = readline.get_line_buffer()
+            line = origline.lstrip()
+            stripped = len(origline) - len(line)
+            begidx = readline.get_begidx() - stripped
+            endidx = readline.get_endidx() - stripped
+
+            # self.completion_matches = compfunc(text, line, begidx, endidx)
+            self.completion_matches = []
+        try:
+            return self.completion_matches[state]
+        except IndexError:
+            return None
