@@ -34,6 +34,14 @@ class BaseCommand:
         return self.nsone.config.get('cli', {}).get('output_format',
                                                     'text') == 'text'
 
+    def _getBoolOption(self, val):
+        val = str(val).lower().strip()
+        if val == 'true' or val == 'yes':
+            val = True
+        if val == 'false' or val == 'no':
+            val = False
+        return bool(val)
+
     def checkWriteLock(self, args):
         if self.isWriteLocked(args['ZONE']) and not args['-f']:
             raise CommandException(self, 'Zone %s is write locked. '

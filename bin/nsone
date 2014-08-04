@@ -25,6 +25,7 @@ Commands:
 """
 
 import sys
+import logging
 from docopt import docopt, DocoptExit
 from nsone import NSONE
 from nsone.config import Config, ConfigException
@@ -65,12 +66,25 @@ if __name__ == '__main__':
     # print(args)
     # print('command arguments:')
 
+    verbosity = args.get('-v', 0)
+    if verbosity > 1:
+        logging.basicConfig(level=logging.DEBUG)
+    elif verbosity > 0:
+        logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.CRITICAL)
+    # tweak requests logging
+    if verbosity < 2:
+        requests_log = logging.getLogger("requests")
+        requests_log.setLevel(logging.WARNING)
+
     # if they specified an api key, use a custom config
     config = None
     if args['--key']:
         config = Config()
         # this will save a .nsone with this key if one doesn't already exist
         config.createFromAPIKey(args['--key'], maybeWriteDefault=True)
+        config['verbosity'] = verbosity
 
     try:
         nsone = NSONE(config=config)
