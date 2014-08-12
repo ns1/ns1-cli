@@ -57,15 +57,16 @@ class BaseCommand:
             longest = max(longest, len(v))
         return longest
 
-    def ppText(self, d):
+    def ppText(self, d, indent=0):
         import collections
         od = collections.OrderedDict(sorted(d.items()))
         longest = self._longest([k for (k, v) in od.items()])
         for (k, v) in od.items():
             if type(v) is str:
-                self.out('%s: %s' % (k.ljust(longest), v))
+                self.out('%s%s: %s' % (' ' * indent, k.ljust(longest), v))
             elif type(v) is list or type(v) is tuple:
                 str_v = [str(x) for x in v]
-                self.out('%s: %s' % (k.ljust(longest), ', '.join(str_v)))
+                self.out('%s%s: %s' % (' ' * indent, k.ljust(longest),
+                                       ', '.join(str_v)))
             else:
-                self.out('%s: %s' % (k.ljust(longest), str(v)))
+                self.out('%s%s: %s' % (' ' * indent, k.ljust(longest), str(v)))

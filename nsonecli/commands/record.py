@@ -4,7 +4,7 @@
 # License under The MIT License (MIT). See LICENSE in project root.
 #
 
-from .base import BaseCommand
+from .base import BaseCommand, CommandException
 
 
 class _record(BaseCommand):
@@ -90,7 +90,18 @@ class _record(BaseCommand):
 
     def _printRecordModel(self, rdata):
         if self.isTextFormat():
+            ans = rdata['answers']
+            fil = rdata['filters']
+            del rdata['answers']
+            del rdata['filters']
             self.ppText(rdata)
+            self.out('ANSWERS:')
+            for a in ans:
+                self.ppText(a, 4)
+            if len(fil):
+                self.out('FILTERS:')
+                for a in fil:
+                    self.ppText(a, 4)
         else:
             self.jsonOut(rdata)
 
@@ -131,5 +142,28 @@ class _record(BaseCommand):
                                      answers=args['ANSWER'])
         self._printRecordModel(out)
 
+    def answer_meta(self, args):
+        self.checkWriteLock(args)
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        answer = args['ANSWER'][0]
+        current = self._recordAPI.retrieve(self._zone,
+                                           self._domain,
+                                           self._type)
+        found = False
+        for a in current['answers']:
+            if a['answer'][0] == answer:
+                a['meta'][args['KEY']] = args['VALUE']
+                found = True
+                break
+        if not found:
+            raise CommandException(self,
+                                   '%s is not a current answer for this '
+                                   'record' % answer)
+        out = self._recordAPI.update(self._zone,
+                                     self._domain,
+                                     self._type,
+                                     answers=current['answers'])
+        self._printRecordModel(out)
 
 record = _record()
