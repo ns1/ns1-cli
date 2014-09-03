@@ -85,7 +85,7 @@ class _record(BaseCommand):
             self.create(args)
         elif args['set']:
             self.set(args)
-        elif args['set-answers']:
+        elif args['answers']:
             self.set_answers(args)
 
     def _printRecordModel(self, rdata):
@@ -112,7 +112,7 @@ class _record(BaseCommand):
         out = self._recordAPI.create(self._zone,
                                      self._domain,
                                      self._type,
-                                     args['ANSWER'],
+                                     answers=args['ANSWER'],
                                      ttl=args['--ttl'],
                                      use_csubnet=csubnet)
         self._printRecordModel(out)
