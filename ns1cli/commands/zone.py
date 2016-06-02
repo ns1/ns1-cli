@@ -10,10 +10,10 @@ from .base import BaseCommand
 class _zone(BaseCommand):
 
     """
-    usage: nsone zone list
-           nsone zone info ZONE
-           nsone zone create ZONE [options]
-           nsone zone delete [-f] ZONE
+    usage: ns1 zone list
+           ns1 zone info ZONE
+           ns1 zone create ZONE [options]
+           ns1 zone delete [-f] ZONE
 
     Options:
        --refresh N  SOA Refresh

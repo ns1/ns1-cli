@@ -5,7 +5,7 @@
 #
 
 """
-usage: nsone> <command> [<args>...]
+usage: ns1> <command> [<args>...]
 
 Commands:
 """
@@ -13,16 +13,16 @@ Commands:
 import readline
 import code
 from docopt import docopt, DocoptExit
-from nsonecli.commands.base import CommandException
+from ns1cli.commands.base import CommandException
 from nsone.rest.resource import ResourceException
 import os
 import sys
 import atexit
 
 
-class NSONERepl(code.InteractiveConsole):
+class NS1Repl(code.InteractiveConsole):
 
-    HISTORY_FILE = '~/.nsone_history'
+    HISTORY_FILE = '~/.ns1_history'
     HISTORY_LEN = 1000
 
     def __init__(self, cmdListDoc, cmdList):
@@ -45,7 +45,7 @@ class NSONERepl(code.InteractiveConsole):
 
     def runsource(self, source, filename="<input>", symbol="single"):
         """
-        intercept nsone commands and run them
+        intercept ns1 commands and run them
         """
         args = docopt(self._doc,
                       argv=str(source).split(' '),
@@ -69,8 +69,8 @@ class NSONERepl(code.InteractiveConsole):
                 if cmd == 'help':
                     print(self._doc)
                 else:
-                    # in repl, replace the require preceding 'nsone' with ''
-                    print(e.usage.replace(' nsone', ''))
+                    # in repl, replace the require preceding 'ns1' with ''
+                    print(e.usage.replace(' ns1', ''))
                 return
             try:
                 svc.run(subArgs)
@@ -88,7 +88,7 @@ class NSONERepl(code.InteractiveConsole):
             print("unknown command '%s': try 'help'" % cmd)
 
     def raw_input(self, prompt):
-        return code.InteractiveConsole.raw_input(self, prompt='nsone> ')
+        return code.InteractiveConsole.raw_input(self, prompt='ns1> ')
 
     def complete(self, text, state):
         """Return the next possible completion for 'text'.

@@ -10,7 +10,7 @@ from .base import BaseCommand, CommandException
 class _qps(BaseCommand):
 
     """
-    usage: nsone qps [ZONE] [[TYPE] [DOMAIN]]
+    usage: ns1 qps [ZONE] [[TYPE] [DOMAIN]]
 
     Arguments:
        ZONE    If specified, statistics are limited to this zone. If not

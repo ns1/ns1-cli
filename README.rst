@@ -1,12 +1,12 @@
 ==================================
-NSONE Command Line Interface (CLI)
+NS1 Command Line Interface (CLI)
 ==================================
 
-:Info: A command line program for accessing NSONE, the Data Driven DNS platform.
+:Info: A command line program for accessing NS1, the Data Driven DNS platform.
 :Author: Shannon Weyrick
 
-.. image:: https://travis-ci.org/nsone/nsone-cli.png
-        :target: https://travis-ci.org/nsone/nsone-cli
+.. image:: https://travis-ci.org/ns1/ns1-cli.png
+        :target: https://travis-ci.org/ns1/ns1-cli
 
 Status
 ======
@@ -21,7 +21,7 @@ Installation
 Documentation
 =============
 
-http://nsone.net/api/
+http://ns1.com/api/
 
 
 
