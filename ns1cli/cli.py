@@ -1,24 +1,23 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2014 NSONE, Inc.
 #
 # License under The MIT License (MIT). See LICENSE in project root.
 #
 
 """
-usage: nsone [-h] [-v ...] [-e <server>] [-k <key>]
-             [-f <format>] [--ignore-ssl-errors] [--version]
+usage: ns1 [-h] [-v ...] [-e <server>] [-k <key>]
+             [-f <format>] [-t <transport>] [--ignore-ssl-errors] [--version]
              [<command>] [<args>...]
 
 Options:
-   -v                      Increase verbosity level. Can be used more than once.
-   -k, --key <key>         Use the specified API Key
-   -e, --endpoint <server> Use the specified server endpoint
-   -f, --format <format>   Output format: 'text' or 'json'
-   --ignore-ssl-errors     Ignore SSL certificate errors
-   -h, --help              Show main usage help
+   -v                            Increase verbosity level. Can be used more than once.
+   -k, --key <key>               Use the specified API Key
+   -e, --endpoint <server>       Use the specified server endpoint
+   -f, --format <format>         Output format: 'text' or 'json'
+   -t, --transport <transport>   HTTP Transport: 'basic'(default) 'requests' 'twisted'
+   --ignore-ssl-errors           Ignore SSL certificate errors
+   -h, --help                    Show main usage help
 
-If no command is specified, the NSONE console is opened to accept interactive
+If no command is specified, the NS1 console is opened to accept interactive
 commands.
 
 Commands:
@@ -29,16 +28,16 @@ import logging
 from docopt import docopt, DocoptExit
 from nsone import NSONE
 from nsone.config import Config, ConfigException
-from nsonecli.version import VERSION
-from nsonecli.commands.base import BaseCommand, CommandException
-from nsonecli.repl import NSONERepl
-import nsonecli.commands
 from nsone.rest.resource import ResourceException
+from ns1cli.version import VERSION
+from ns1cli.commands.base import BaseCommand, CommandException
+from ns1cli.repl import NS1Repl
+import ns1cli.commands
 
 
 # gather commands
 cmdList = {}
-for sym, ins in nsonecli.commands.__dict__.items():
+for sym, ins in ns1cli.commands.__dict__.items():
     if isinstance(ins, BaseCommand):
         cmdList[sym] = ins
 
@@ -52,13 +51,14 @@ for cname, cmd in cmdList.items():
     cmdListDoc += '   %s%s\n' % (cname.ljust(10), cmd.SHORT_HELP)
 
 __doc__ += cmdListDoc
-__doc__ += "\nSee 'nsone help <command>' for more information on a " \
+__doc__ += "\nSee 'ns1 help <command>' for more information on a " \
            "specific command."
 
 
-BANNER = 'nsone CLI version %s' % VERSION
+BANNER = 'ns1 CLI version %s' % VERSION
 
-if __name__ == '__main__':
+
+def main():
     args = docopt(__doc__,
                   version=BANNER,
                   options_first=True)
@@ -109,6 +109,11 @@ if __name__ == '__main__':
 
     if args['--ignore-ssl-errors']:
         nsone.config['ignore-ssl-errors'] = args['--ignore-ssl-errors']
+        if verbosity < 2:
+            logging.captureWarnings(True)
+
+    if args['--transport']:
+        nsone.config['transport'] = args['--transport']
 
     BaseCommand.nsone = nsone
 
@@ -117,7 +122,7 @@ if __name__ == '__main__':
     if not cmd:
         info = "\nType 'help' for help\n\nCurrent Key: %s\nEndpoint: %s" % \
                (nsone.config.getCurrentKeyID(), nsone.config.getEndpoint())
-        repl = NSONERepl(cmdListDoc, cmdList)
+        repl = NS1Repl(cmdListDoc, cmdList)
         repl.interact(BANNER + info)
         sys.exit(0)
 
@@ -142,5 +147,4 @@ if __name__ == '__main__':
             print(e.message)
             sys.exit(1)
     else:
-        exit("%r is not a command. See 'nsone help'." % cmd)
-
+        exit("%r is not a command. See 'ns1 help'." % cmd)

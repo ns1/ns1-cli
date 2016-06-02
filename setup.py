@@ -1,6 +1,8 @@
 import os
 import sys
 
+from version import VERSION
+
 try:
     from setuptools import setup
 except ImportError:
@@ -9,21 +11,26 @@ except ImportError:
 path, script = os.path.split(sys.argv[0])
 os.chdir(os.path.abspath(path))
 
-requests = 'docopt == 0.6.1'
-install_requires = [requests]
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'nsonecli'))
-from version import VERSION
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'ns1cli'))
 
 setup(
-    name='nsonecli',
+    name='ns1cli',
     version=VERSION,
-    description='NSONE command line interface',
+    description='NS1 command line interface',
     author='Shannon Weyrick',
-    author_email='sweyrick@nsone.net',
-    url='https://nsone.net/',
-    packages=['nsonecli'],
-    install_requires=install_requires,
+    author_email='sweyrick@ns1.com',
+    url='https://ns1.com/',
+    packages=['ns1cli', 'ns1cli.commands'],
+    scripts=['bin/ns1'],
+    entry_points={
+        'console_scripts': [
+            'ns1=ns1cli.cli:main'
+        ],
+    },
+    install_requires=[
+        'docopt==0.6.1',
+        'nsone==0.9.2',
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

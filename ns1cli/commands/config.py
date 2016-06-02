@@ -10,8 +10,8 @@ from .base import BaseCommand
 class _config(BaseCommand):
 
     """
-    usage: nsone config [show]
-           nsone config key KEYID
+    usage: ns1 config [show]
+           ns1 config key KEYID
 
     Actions:
        show     Show the existing config

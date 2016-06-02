@@ -10,7 +10,7 @@ from .base import BaseCommand
 class _help(BaseCommand):
 
     """
-    usage: nsone help COMMAND
+    usage: ns1 help COMMAND
 
     Arguments:
        COMMAND  The command to get help on
