@@ -4,18 +4,21 @@
 #
 
 """
-usage: ns1 [-h] [-v ...] [-e <server>] [-k <key>]
-             [-f <format>] [-t <transport>] [--ignore-ssl-errors] [--version]
-             [<command>] [<args>...]
+usage: ns1 [-h] [-v ...] [-e <server>] [-k <key>] [-f <format>]
+           [-t <transport>] [--ignore-ssl-errors] [--version]
+           [<command>] [<args>...]
 
 Options:
-   -v                            Increase verbosity level. Can be used more than once.
-   -k, --key <key>               Use the specified API Key
-   -e, --endpoint <server>       Use the specified server endpoint
-   -f, --format <format>         Output format: 'text' or 'json'
-   -t, --transport <transport>   HTTP Transport: 'basic'(default) 'requests' 'twisted'
-   --ignore-ssl-errors           Ignore SSL certificate errors
-   -h, --help                    Show main usage help
+   -v                           Increase verbosity level. Can be used more
+                                than once
+   -k, --key <key>              Use the specified API Key
+   -e, --endpoint <server>      Use the specified server endpoint
+   -f, --format <format>        Output format: 'text'/'json'
+                                Default: 'text'
+   -t, --transport <transport>  Backend transport: 'basic'/'requests'/'twisted'
+                                Default: 'requests' if installed, O/W 'basic'
+   --ignore-ssl-errors          Ignore SSL certificate errors
+   -h, --help                   Show main usage help
 
 If no command is specified, the NS1 console is opened to accept interactive
 commands.
