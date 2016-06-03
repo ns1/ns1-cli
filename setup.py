@@ -1,7 +1,7 @@
 import os
 import sys
 
-from version import VERSION
+from ns1cli.version import VERSION
 
 try:
     from setuptools import setup
