@@ -32,7 +32,6 @@ class _zone(BaseCommand):
     SHORT_HELP = "Create, retrieve, update, and delete zone SOA data"
 
     def run(self, args):
-        # print("zone run: %s" % args)
         self._zoneAPI = self.nsone.zones()
         self._zone = args['ZONE']
 

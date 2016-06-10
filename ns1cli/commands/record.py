@@ -51,7 +51,7 @@ class _record(BaseCommand):
        record create test.com mail MX --priority 10 1.2.3.4
        record answer add test.com mail MX --priority 20 2.3.4.5
 
-       record create test.com geo A --ttl 300 --use-client-subnet true
+       record create test.com geo A --ttl 300 --use-client-subnet true 1.1.1.1
        record answers test.com geo A --ttl 300 1.2.3.4 6.7.8.9
        record answer add test.com geo A 3.3.3.3
        record answer meta set test.com geo A 1.2.3.4 georegion US-WEST
@@ -62,7 +62,6 @@ class _record(BaseCommand):
     SHORT_HELP = "Create, retrieve, update, and delete records in a zone"
 
     def run(self, args):
-        # print("record run: %s" % args)
         self._recordAPI = self.nsone.records()
         self._zone = args['ZONE']
         self._domain = args['DOMAIN']
@@ -107,14 +106,17 @@ class _record(BaseCommand):
 
     def create(self, args):
         self.checkWriteLock(args)
-        csubnet = self._getBoolOption(args['--use-client-subnet'])
+        kwargs = {
+            'answers': args['ANSWER'],
+            'csubnet': self._getBoolOption(args['--use-client-subnet'])
+        }
+        if args['--ttl']:
+            kwargs['--ttl'] = args['--ttl']
         # XXX handle mx priority
         out = self._recordAPI.create(self._zone,
                                      self._domain,
                                      self._type,
-                                     answers=args['ANSWER'],
-                                     ttl=args['--ttl'],
-                                     use_csubnet=csubnet)
+                                     **kwargs)
         self._printRecordModel(out)
 
     def set(self, args):
