@@ -41,7 +41,7 @@ See 'ns1 help <command>' for more information on a specific command.
 
 ## REPL
 
-![asciicast](https://asciinema.org/a/26werk546u5ay8tfalhyabtcp)
+[![asciicast](https://asciinema.org/a/5nazwezog280u44okccrrjhop.png)](https://asciinema.org/a/5nazwezog280u44okccrrjhop)
 
 Installation
 ============
