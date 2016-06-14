@@ -11,7 +11,7 @@ class _config(BaseCommand):
 
     """
     usage: ns1 config [show]
-           ns1 config key KEYID
+       ns1 config key KEYID
 
     Actions:
        show     Show the existing config

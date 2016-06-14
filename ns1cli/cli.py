@@ -9,14 +9,13 @@ usage: ns1 [-h] [-v ...] [-e <server>] [-k <key>] [-f <format>]
            [<command>] [<args>...]
 
 Options:
-   -v                           Increase verbosity level. Can be used more
-                                than once
+   -v                           Increase verbosity level
    -k, --key <key>              Use the specified API Key
    -e, --endpoint <server>      Use the specified server endpoint
-   -f, --format <format>        Output format: 'text'/'json'
-                                Default: 'text'
-   -t, --transport <transport>  Backend transport: 'basic'/'requests'/'twisted'
-                                Default: 'requests' if installed, O/W 'basic'
+   -f, --format <format>        Output format: text/json
+                                [default: text]
+   -t, --transport <transport>  Backend transport: basic/requests/twisted
+                                [default: requests] if installed, O/W basic
    --ignore-ssl-errors          Ignore SSL certificate errors
    -h, --help                   Show main usage help
 
@@ -65,9 +64,6 @@ def main():
     args = docopt(__doc__,
                   version=BANNER,
                   options_first=True)
-    # print('global arguments:')
-    # print(args)
-    # print('command arguments:')
 
     verbosity = args.get('-v', 0)
     if verbosity > 1:
@@ -81,7 +77,7 @@ def main():
         requests_log = logging.getLogger("requests")
         requests_log.setLevel(logging.WARNING)
 
-    # if they specified an api key, use a custom config
+    # if api key given, use a custom config.
     config = None
     if args['--key']:
         config = Config()
@@ -128,10 +124,9 @@ def main():
         repl = NS1Repl(cmdListDoc, cmdList)
         repl.interact(BANNER + info)
         sys.exit(0)
-
     cmdArgs = args['<args>']
     subArgv = [cmd] + cmdArgs
-    # print "%s | %s | %s" % (cmd, cmdArgs, subArgv)
+
     if cmd in cmdList.keys():
         svc = cmdList[cmd]
         try:

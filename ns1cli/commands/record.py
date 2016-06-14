@@ -11,15 +11,15 @@ class _record(BaseCommand):
 
     """
     usage: ns1 record info ZONE DOMAIN TYPE
-           ns1 record create ZONE DOMAIN TYPE [options] (ANSWER ...)
-           ns1 record set ZONE DOMAIN TYPE options
-           ns1 record meta set ZONE DOMAIN TYPE KEY VALUE
-           ns1 record meta remove ZONE DOMAIN TYPE KEY VALUE
-           ns1 record answers ZONE DOMAIN TYPE [options] (ANSWER ...)
-           ns1 record answer add ZONE DOMAIN TYPE ANSWER
-           ns1 record answer remove ZONE DOMAIN TYPE ANSWER
-           ns1 record answer meta set ZONE DOMAIN TYPE ANSWER KEY VALUE
-           ns1 record answer meta remove ZONE DOMAIN TYPE ANSWER KEY
+       ns1 record create ZONE DOMAIN TYPE [options] (ANSWER ...)
+       ns1 record set ZONE DOMAIN TYPE options
+       ns1 record meta set ZONE DOMAIN TYPE KEY VALUE
+       ns1 record meta remove ZONE DOMAIN TYPE KEY VALUE
+       ns1 record answers ZONE DOMAIN TYPE [options] (ANSWER ...)
+       ns1 record answer add ZONE DOMAIN TYPE ANSWER
+       ns1 record answer remove ZONE DOMAIN TYPE ANSWER
+       ns1 record answer meta set ZONE DOMAIN TYPE ANSWER KEY VALUE
+       ns1 record answer meta remove ZONE DOMAIN TYPE ANSWER KEY
 
     Record operations. You may leave the zone name off of DOMAIN (do not end it
     with a period)
@@ -134,6 +134,9 @@ class _record(BaseCommand):
                                          self._domain,
                                          self._type)
         self._printRecordModel(rdata)
+
+    def record_meta(self, args):
+        self.checkWriteLock(args)
 
     def set_answers(self, args):
         self.checkWriteLock(args)

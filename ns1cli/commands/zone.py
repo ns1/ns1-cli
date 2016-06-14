@@ -11,9 +11,9 @@ class _zone(BaseCommand):
 
     """
     usage: ns1 zone list
-           ns1 zone info ZONE
-           ns1 zone create ZONE [options]
-           ns1 zone delete [-f] ZONE
+       ns1 zone info ZONE
+       ns1 zone create ZONE [options]
+       ns1 zone delete [-f] ZONE
 
     Options:
        --refresh N  SOA Refresh
@@ -61,11 +61,10 @@ class _zone(BaseCommand):
                                       ', '.join(r['short_answers'])))
 
     def create(self, args):
-        zdata = self._zoneAPI.create(self._zone,
-                                     refresh=args['--refresh'],
-                                     retry=args['--retry'],
-                                     expiry=args['--expiry'],
-                                     nx_ttl=args['--nx_ttl'])
+        # Strip out 'create' options.
+        options = dict((k.lstrip('--'), v) for k, v in args.iteritems() if v and k[:2] == '--')
+
+        zdata = self._zoneAPI.create(self._zone, **options)
         self._printZoneModel(zdata)
 
     def delete(self, args):
