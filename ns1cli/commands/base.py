@@ -18,6 +18,8 @@ class BaseCommand:
 
     SHORT_HELP = ""
 
+    BOOL_OPTIONS = ()
+
     """:type : nsone.NSONE"""
     nsone = None
 
@@ -34,7 +36,16 @@ class BaseCommand:
         return self.nsone.config.get('cli', {}).get('output_format',
                                                     'text') == 'text'
 
-    def _getBoolOption(self, val):
+    def _get_options(self, args):
+        options = {}
+        for k, v in args.iteritems():
+            if v and k[:2] == '--':
+                if k in self.BOOL_OPTIONS:
+                    v = self._get_bool_option(v)
+                options[k.lstrip('--')] = v
+        return options
+
+    def _get_bool_option(self, val):
         val = str(val).lower().strip()
         if val == 'true' or val == 'yes':
             val = True

@@ -10,8 +10,10 @@ from .base import BaseCommand, CommandException
 class _record(BaseCommand):
 
     """
-    usage: ns1 record info ZONE DOMAIN TYPE
+    Usage:
+       ns1 record info ZONE DOMAIN TYPE
        ns1 record create ZONE DOMAIN TYPE [options] (ANSWER ...)
+       ns1 record link ZONE SOURCE_DOMAIN DOMAIN TYPE
        ns1 record set ZONE DOMAIN TYPE options
        ns1 record meta set ZONE DOMAIN TYPE KEY VALUE
        ns1 record meta remove ZONE DOMAIN TYPE KEY VALUE
@@ -25,16 +27,16 @@ class _record(BaseCommand):
     with a period)
 
     Options:
-       --ttl N                          TTL (Defaults to default zone TTL)
-       --use-client-subnet BOOL         Set use of client-subnet EDNS option
-                                        (Defaults to True on new records)
-       --priority                       For MX records, the priority
-       -f                               Force: override the write lock if one
-                                        exists
+       --ttl N                     TTL (Defaults to default zone TTL)
+       --use-client-subnet BOOL    Set use of client-subnet EDNS option
+                                   (Defaults to True on new records)
+       --priority                  For MX records, the priority
+       -f                          Force: override the write lock if one exists
 
     Record Actions:
        info          Get record details
        create        Create a new record, optionally with simple answers
+       link          Create a linked record from an existing
        set           Set record properties, including record level meta data
        answers       Set one or more simple answers (no meta) for the record
        meta set      Set record level meta data
@@ -61,8 +63,10 @@ class _record(BaseCommand):
 
     SHORT_HELP = "Create, retrieve, update, and delete records in a zone"
 
+    BOOL_OPTIONS = ('--use-client-subnet', )
+
     def run(self, args):
-        self._recordAPI = self.nsone.records()
+        self._record_api = self.nsone.records()
         self._zone = args['ZONE']
         self._domain = args['DOMAIN']
         self._type = args['TYPE']
@@ -74,6 +78,8 @@ class _record(BaseCommand):
         # order matters
         if args['info']:
             self.info()
+        elif args['link']:
+            self.link(args)
         elif args['meta'] and args['answer']:
             self.answer_meta(args)
         elif args['answer']:
@@ -87,7 +93,7 @@ class _record(BaseCommand):
         elif args['answers']:
             self.set_answers(args)
 
-    def _printRecordModel(self, rdata):
+    def _print_record_model(self, rdata):
         if self.isTextFormat():
             ans = rdata['answers']
             fil = rdata['filters']
@@ -113,27 +119,27 @@ class _record(BaseCommand):
         if args['--ttl']:
             kwargs['--ttl'] = args['--ttl']
         # XXX handle mx priority
-        out = self._recordAPI.create(self._zone,
-                                     self._domain,
-                                     self._type,
-                                     **kwargs)
-        self._printRecordModel(out)
+        out = self._record_api.create(
+            self._zone, self._domain, self._type, **kwargs)
+        self._print_record_model(out)
 
     def set(self, args):
         self.checkWriteLock(args)
-        csubnet = self._getBoolOption(args['--use-client-subnet'])
-        out = self._recordAPI.update(self._zone,
-                                     self._domain,
-                                     self._type,
-                                     ttl=args['--ttl'],
-                                     use_csubnet=csubnet)
-        self._printRecordModel(out)
+        options = self._get_options(args)
+        if 'use-client-subnet' in options:
+            options['use_csubnet'] = options.pop('use-client-subnet')
+        out = self._record_api.update(
+            self._zone, self._domain, self._type, **options)
+        self._print_record_model(out)
 
     def info(self):
-        rdata = self._recordAPI.retrieve(self._zone,
-                                         self._domain,
-                                         self._type)
-        self._printRecordModel(rdata)
+        rdata = self._record_api.retrieve(self._zone, self._domain, self._type)
+        self._print_record_model(rdata)
+
+    def link(self, args):
+        out = self._record_api.create(self._zone, self._domain, self._type,
+                                      link=args['SOURCE_DOMAIN'], answers=[])
+        self._print_record_model(out)
 
     def record_meta(self, args):
         self.checkWriteLock(args)
@@ -141,34 +147,31 @@ class _record(BaseCommand):
     def set_answers(self, args):
         self.checkWriteLock(args)
         # XXX handle mx priority
-        out = self._recordAPI.update(self._zone,
-                                     self._domain,
-                                     self._type,
-                                     answers=args['ANSWER'])
-        self._printRecordModel(out)
+        out = self._record_api.update(self._zone, self._domain, self._type,
+                                      answers=args['ANSWER'])
+        self._print_record_model(out)
 
     def answer_meta(self, args):
         self.checkWriteLock(args)
         # there is no rest api call to set meta without setting the entire
         # answer, so we have to retrieve it, alter it, and send it back
         answer = args['ANSWER'][0]
-        current = self._recordAPI.retrieve(self._zone,
-                                           self._domain,
-                                           self._type)
+        current = self._record_api.retrieve(self._zone, self._domain, self._type)
+
         found = False
         for a in current['answers']:
             if a['answer'][0] == answer:
                 a['meta'][args['KEY']] = args['VALUE']
                 found = True
                 break
+
         if not found:
             raise CommandException(self,
                                    '%s is not a current answer for this '
                                    'record' % answer)
-        out = self._recordAPI.update(self._zone,
-                                     self._domain,
-                                     self._type,
-                                     answers=current['answers'])
-        self._printRecordModel(out)
+
+        out = self._record_api.update(self._zone, self._domain, self._type,
+                                      answers=current['answers'])
+        self._print_record_model(out)
 
 record = _record()

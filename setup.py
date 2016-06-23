@@ -31,6 +31,13 @@ setup(
         'docopt==0.6.1',
         'nsone==0.9.2',
     ],
+    setup_requires=['pytest-runner'],
+    tests_require=[
+        'pytest',
+        'pytest-mock',
+        'pytest-pep8',
+        'pytest-cov',
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
