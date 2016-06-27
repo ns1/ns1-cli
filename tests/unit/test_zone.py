@@ -76,11 +76,6 @@ def test_info_cmd(mocked_zone_api):
     assert mocked_zone_api.retrieve.call_args == mock.call(name)
 
 
-# Implemented Options
-# OPTIONS = ['retry', 'refresh', 'expiry', 'nx_ttl', 'link']
-#PASSTHRU_FIELDS = ['secondary', 'hostmaster', 'meta', 'networks', 'link']
-
-
 def pairwise(iterable):
     "s -> (s0, s1), (s2, s3), (s4, s5), ..."
     a = iter(iterable)
@@ -93,7 +88,8 @@ def pairwise(iterable):
                 ['--expiry', 1, '--nx_ttl', 1],
                 ['--expiry', 1, '--nx_ttl', 1, '--refresh', 1],
                 ['--expiry', 1, '--nx_ttl', 1, '--refresh', 1, '--retry', 1],
-                ['--expiry', 1, '--nx_ttl', 1, '--refresh', 1, '--retry', 1, '--link', 'test.zone']]
+                ['--expiry', 1, '--nx_ttl', 1, '--refresh', 1, '--retry', 1,
+                 '--link', 'test.zone']]
 )
 def test_create_cmd(mocked_zone_api, options):
     cmd, subCmd, name = 'zone', 'create', 'test.zone'
@@ -120,18 +116,3 @@ def test_delete_cmd(mocked_zone_api):
     assert zone._zone == name
     assert mocked_zone_api.delete.called
     assert mocked_zone_api.delete.call_args == mock.call(name)
-
-
-# @pytest.mark.parametrize(
-#     'cmd, subCmd, name', [['zone', 'create', 'test.zone'],
-#                           ['zone', 'delete', 'test.zone']]
-# )
-# def test_writelock(mocked_zone_api, cmd, subCmd, name):
-#     args = docopt(zone.__doc__, argv=[cmd, subCmd, name])
-#
-#     # Lock the key
-#     zone.nsone.config.isKeyWriteLocked.return_value = True
-#     with pytest.raises(CommandException):
-#         args = docopt(zone.__doc__, argv=[cmd, subCmd, name])
-#
-#     args = docopt(zone.__doc__, argv=[cmd, subCmd, name, '-f'])
