@@ -1,9 +1,7 @@
-import mock
 import pytest
 from pytest_mock import mocker
 from docopt import docopt, DocoptExit
 
-from ns1cli.commands.base import CommandException
 from ns1cli.commands import record
 import nsone
 from nsone.records import Records
@@ -12,6 +10,11 @@ try:  # Python 2
     from itertools import izip as zip
 except ImportError:
     pass
+
+try:  # Python 3.3 +
+    import unittest.mock as mock
+except ImportError:
+    import mock
 
 
 @pytest.fixture()
