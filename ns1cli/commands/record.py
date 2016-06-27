@@ -13,6 +13,7 @@ class _record(BaseCommand):
     Usage:
        ns1 record info ZONE DOMAIN TYPE
        ns1 record create ZONE DOMAIN TYPE [options] (ANSWER ...)
+       ns1 record delete [-f] ZONE DOMAIN TYPE
        ns1 record link ZONE SOURCE_DOMAIN DOMAIN TYPE
        ns1 record set ZONE DOMAIN TYPE options
        ns1 record meta set ZONE DOMAIN TYPE KEY VALUE
@@ -36,6 +37,7 @@ class _record(BaseCommand):
     Record Actions:
        info          Get record details
        create        Create a new record, optionally with simple answers
+       delete        Delete a record
        link          Create a linked record from an existing
        set           Set record properties, including record level meta data
        answers       Set one or more simple answers (no meta) for the record
@@ -54,6 +56,7 @@ class _record(BaseCommand):
        record answer add test.com mail MX --priority 20 2.3.4.5
 
        record create test.com geo A --ttl 300 --use-client-subnet true 1.1.1.1
+       record meta set test.com geo A priority 5
        record answers test.com geo A --ttl 300 1.2.3.4 6.7.8.9
        record answer add test.com geo A 3.3.3.3
        record answer meta set test.com geo A 1.2.3.4 georegion US-WEST
@@ -78,18 +81,20 @@ class _record(BaseCommand):
         # order matters
         if args['info']:
             self.info()
-        elif args['link']:
-            self.link(args)
-        elif args['meta'] and args['answer']:
-            self.answer_meta(args)
-        elif args['answer']:
-            self.answer(args)
-        elif args['meta']:
-            self.record_meta(args)
         elif args['create']:
             self.create(args)
+        elif args['delete']:
+            self.delete(args)
+        elif args['link']:
+            self.link(args)
         elif args['set']:
             self.set(args)
+        elif args['meta']:
+            self.record_meta(args)
+        elif args['answer']:
+            self.answer(args)
+        elif args['meta'] and args['answer']:
+            self.answer_meta(args)
         elif args['answers']:
             self.set_answers(args)
 
@@ -112,16 +117,16 @@ class _record(BaseCommand):
 
     def create(self, args):
         self.checkWriteLock(args)
-        kwargs = {
-            'answers': args['ANSWER'],
-            'csubnet': self._getBoolOption(args['--use-client-subnet'])
-        }
-        if args['--ttl']:
-            kwargs['--ttl'] = args['--ttl']
+        kwargs = self._get_options(args)
+        kwargs['answers'] = args['ANSWER']
         # XXX handle mx priority
         out = self._record_api.create(
             self._zone, self._domain, self._type, **kwargs)
         self._print_record_model(out)
+
+    def delete(self, args):
+        self.checkWriteLock(args)
+        self._record_api.delete(self._zone, self._domain, self._type)
 
     def set(self, args):
         self.checkWriteLock(args)
@@ -143,6 +148,11 @@ class _record(BaseCommand):
 
     def record_meta(self, args):
         self.checkWriteLock(args)
+        current = self._record_api.retrieve(self._zone, self._domain, self._type)
+        current['meta'][args['KEY']] = args['VALUE']
+        rdata = self._record_api.update(self._zone, self._domain, self._type,
+                                        meta=current['meta'])
+        self._print_record_model(rdata)
 
     def set_answers(self, args):
         self.checkWriteLock(args)
