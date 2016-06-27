@@ -30,6 +30,7 @@ setup(
     install_requires=[
         'docopt==0.6.1',
         'nsone==0.9.3',
+        'six'
     ],
     setup_requires=['pytest-runner'],
     tests_require=[

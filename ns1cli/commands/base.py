@@ -5,6 +5,7 @@
 #
 
 import json
+import six
 
 
 class CommandException(Exception):
@@ -38,7 +39,7 @@ class BaseCommand:
 
     def _get_options(self, args):
         options = {}
-        for k, v in args.iteritems():
+        for k, v in six.iteritems(args):
             if v and k[:2] == '--':
                 if k in self.BOOL_OPTIONS:
                     v = self._get_bool_option(v)
