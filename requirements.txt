@@ -1,2 +1,2 @@
 docopt==0.6.1
-nsone==0.9.2
+nsone==0.9.3
