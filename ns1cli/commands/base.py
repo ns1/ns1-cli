@@ -20,6 +20,7 @@ class BaseCommand:
     SHORT_HELP = ""
 
     BOOL_OPTIONS = ()
+    NON_PARSE_OPTIONS = ()
 
     """:type : nsone.NSONE"""
     nsone = None
@@ -40,6 +41,8 @@ class BaseCommand:
     def _get_options(self, args):
         options = {}
         for k, v in six.iteritems(args):
+            if k in self.NON_PARSE_OPTIONS:
+                continue
             if v and k[:2] == '--':
                 if k in self.BOOL_OPTIONS:
                     v = self._get_bool_option(v)

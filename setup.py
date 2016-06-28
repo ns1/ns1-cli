@@ -28,7 +28,7 @@ setup(
         ],
     },
     install_requires=[
-        'docopt==0.6.1',
+        'docopt==0.6.2',
         'nsone==0.9.3',
         'six'
     ],

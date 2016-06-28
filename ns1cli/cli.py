@@ -61,9 +61,7 @@ BANNER = 'ns1 CLI version %s' % VERSION
 
 
 def main():
-    args = docopt(__doc__,
-                  version=BANNER,
-                  options_first=True)
+    args = docopt(__doc__, version=BANNER, options_first=True)
 
     verbosity = args.get('-v', 0)
     if verbosity > 1:
@@ -77,7 +75,7 @@ def main():
         requests_log = logging.getLogger("requests")
         requests_log.setLevel(logging.WARNING)
 
-    # if api key given, use a custom config.
+    # if api key given, use a custom config
     config = None
     if args['--key']:
         config = Config()
@@ -130,7 +128,7 @@ def main():
     if cmd in cmdList.keys():
         svc = cmdList[cmd]
         try:
-            subArgs = docopt(svc.__doc__, argv=subArgv)
+            subArgs = docopt(svc.__doc__, argv=subArgv, options_first=True)
         except DocoptExit as e:
             if cmd == 'help':
                 print(__doc__)

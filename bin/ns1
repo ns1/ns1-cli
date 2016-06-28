@@ -130,7 +130,7 @@ if __name__ == '__main__':
     if cmd in cmdList.keys():
         svc = cmdList[cmd]
         try:
-            subArgs = docopt(svc.__doc__, argv=subArgv)
+            subArgs = docopt(svc.__doc__, argv=subArgv, options_first=True)
         except DocoptExit as e:
             if cmd == 'help':
                 print(__doc__)
