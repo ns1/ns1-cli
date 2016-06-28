@@ -2,10 +2,9 @@
 NS1 Command Line Interface (CLI)
 ==================================
 
-:Info: A command line program for accessing NS1, the Data Driven DNS platform.
-:Author: Shannon Weyrick
+:Info: A command line program and REPL for accessing NS1, the Data Driven DNS platform.
 
-.. image:: https://travis-ci.org/ns1/ns1-cli.png
+.. image:: https://travis-ci.org/ns1/ns1-cli.svg?branch=develop
         :target: https://travis-ci.org/ns1/ns1-cli
 
 Status

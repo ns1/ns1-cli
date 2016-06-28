@@ -1,7 +1,7 @@
 NS1 Command Line Interface (CLI)
 ==================================
 
-![Travis Build Status](https://travis-ci.org/ns1/ns1-cli)
+![Travis Build Status](https://travis-ci.org/ns1/ns1-cli.svg?branch=develop)
 
 ns1 is a both a command line program and REPL for accessing NS1, the Data Driven DNS platform.
 
