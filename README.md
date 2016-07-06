@@ -36,7 +36,7 @@ See `ns1 help <command>` for more information on a specific command.
 
 ## REPL
 
-`$ ns1` will start the REPL
+` $ ns1 ` will start the REPL
 
 
 Installation
@@ -61,6 +61,15 @@ $ cd <ns1cli directory>
 $ pip install --editable .
 ```
 
+Configuration
+=============
+
+__ns1cli uses the [NS1 python client](https://github.com/ns1/nsone-python) to communicate with the [NS1 API](https://ns1.com/api/).__
+
+ns1cli will by default attempt to load a configuration file from `$HOME/.nsone`.
+
+ - The configuration object used comes from the underlying NS1 python client.
+
 
 ## TODO:
 
@@ -82,4 +91,3 @@ $ pip install --editable .
    
    - Answers
      - implement `ns1 record answer remove`
-
