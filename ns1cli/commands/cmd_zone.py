@@ -34,7 +34,8 @@ def cli(ctx):
 @cli.command('list', short_help='List all active zones')
 @click.pass_context
 def list(ctx):
-    """List all active zones
+    """Returns all active zones and basic zone configuration details
+    for each.
 
     \b
     Examples:
