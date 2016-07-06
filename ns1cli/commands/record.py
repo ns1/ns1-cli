@@ -124,9 +124,7 @@ class _record(BaseCommand):
         else:
             self.jsonOut(rdata)
 
-    def create(self, args):
-        self.checkWriteLock(args)
-        kwargs = self._get_options(args)
+    def _get_answers(self, args):
         answers = [a for a in args['ANSWER'] if a != '']
 
         # Special case of MX, every answer requires priority
@@ -136,7 +134,13 @@ class _record(BaseCommand):
                 raise CommandException(self, 'Each MX answer require priority')
             answers = six.itertools.izip(pri, answers)
 
-        kwargs['answers'] = answers
+        return answers
+
+    def create(self, args):
+        self.checkWriteLock(args)
+        kwargs = self._get_options(args)
+        kwargs['answers'] = self._get_answers(args)
+
         out = self._record_api.create(
             self._zone, self._domain, self._type, **kwargs)
         self._print_record_model(out)
@@ -173,26 +177,24 @@ class _record(BaseCommand):
 
     def set_answers(self, args):
         self.checkWriteLock(args)
-        # XXX handle mx priority
+        answers = self._get_answers(args)
         out = self._record_api.update(self._zone, self._domain, self._type,
-                                      answers=args['ANSWER'])
+                                      answers=answers)
         self._print_record_model(out)
 
     def answer(self, args):
         self.checkWriteLock(args)
-        answer = [args['ANSWER']]
+        import ipdb;ipdb.set_trace()
 
         if args['add']:
-            if self._type == 'MX':
-                import ipdb;ipdb.set_trace()
-                answer.append(args['--priority'])
             record = self.nsone.loadRecord(
                 self._domain, self._type, zone=self._zone)
-            out = record.addAnswers(answer)
+            answers = self._get_answers(args)
+            out = record.addAnswers(answers)
         elif args['remove']:
             record = self.nsone.loadRecord(
                 self._domain, self._type, zone=self._zone)
-            out = record.removeAnswers(answer)
+            out = record.removeAnswers(args['ANSWER'])
 
         self._print_record_model(out.data)
 
