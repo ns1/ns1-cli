@@ -61,10 +61,10 @@ def cli(ctx):
 @click.argument('TYPE', required=False, metavar='TYPE]]')
 @click.pass_context
 def qps(ctx, type, domain, zone):
-    """Retrieve real time queries per second for a zone or a record
+    """Retrieve real time queries per second for a zone or a record.
 
     \b
-    Arguments:
+    ARGUMENTS:
        ZONE    If specified, statistics are limited to this zone. If not
                specified, then statistics are account-wide.
        TYPE    DNS record type (e.g., A, CNAME, MX ...). Requires ZONE
@@ -73,9 +73,9 @@ def qps(ctx, type, domain, zone):
                and <type>
 
     \b
-    Examples:
-       qps test.com
-       qps test.com test A
+    EXAMPLES:
+       ns1 qps test.com
+       ns1 qps test.com test A
     """
     kwargs = {}
     if zone:

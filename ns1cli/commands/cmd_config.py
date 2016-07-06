@@ -24,9 +24,9 @@ def cli(ctx):
 def show(ctx):
     """Show the existing config
 
-    Examples:
-
-        config show
+    \b
+    EXAMPLES:
+        ns1 config show
     """
     ctx.obj.formatter.print_config(ctx.obj.nsone.config)
 
@@ -38,11 +38,10 @@ def show(ctx):
 def set(ctx, value, key):
     """Set the active configuration key-value
 
-    Examples:
-
-        config set write_lock true
-
-        config set output_format json
+    \b
+    EXAMPLES:
+        ns1 config set write_lock true
+        ns1 config set output_format json
     """
     ctx.obj.set_config(key, value)
     ctx.obj.formatter.print_config(ctx.obj.nsone.config)
@@ -54,9 +53,9 @@ def set(ctx, value, key):
 def key(ctx, keyid):
     """Set the active configuration key ID
 
-    Examples:
-
-        config key default
+    \b
+    EXAMPLES:
+        ns1 config key default
     """
     ctx.obj.nsone.config.useKeyID(keyid)
     click.secho('Using Key: %s' % keyid, bold=True)
