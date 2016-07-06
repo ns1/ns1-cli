@@ -82,29 +82,26 @@ def cli(ctx):
     ctx.obj.record_api = ctx.obj.nsone.records()
 
 
-# @cli.command('help', short_help='get help on record command')
-# @click.argument('subcommands', required=False, nargs=-1)
-# @click.pass_context
-# def help(ctx, subcommands):
-#     help_text = cli.get_help(ctx)
-#
-#     command = cli.get_command(ctx, subcommands)
-#     if command:
-#         help_text = command.get_help(ctx)
-#     import ipdb; ipdb.set_trace()
-#     click.echo_via_pager(help_text)
-
-
 @cli.command('info', short_help='get record details')
 @record_arguments
 @click.pass_context
 def info(ctx):
-    """Get record details
+    """Returns full configuration for a DNS record including basic config,
+    answers, regions, filter chain configuration, and all metadata tables
+    and data feeds attached to entities in the record. (Note that regions
+    might be any specified grouping, not necessarily a geo-related region)
 
     \b
-    Examples:
+    EXAMPLES:
         record info test.com test A
         record info test.com foo CNAME
+
+    \b
+    NOTES:
+        ZONE, DOMAIN, and record TYPE must be fully specified,
+        e.g. example.com www.example.com A returns the A record for www.example.com in the example.com zone.
+
+        If no "dot" in DOMAIN, the zone is automatically appended to form a FQDN.
     """
     try:
         rdata = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
@@ -117,8 +114,8 @@ def info(ctx):
 
 @cli.command('create',
              short_help='create a new record, optionally with simple answers')
-@click.option('--src_domain', type=str,
-              help='create a linked record from an existing')
+@click.option('--target', type=str,
+              help='create a linked record from an existing target')
 @click.option('--ttl', type=int,
               help='ttl (defaults to default zone ttl)')
 @click.option('--use-client-subnet', type=bool,
@@ -129,19 +126,65 @@ def info(ctx):
               help='MX priority (ignored if type is not MX)')
 @click.argument('ANSWERS', required=False, nargs=-1)
 @click.pass_context
-def create(ctx, answers, mx_priority, use_client_subnet, ttl, src_domain):
-    """create a new record, optionally with simple answers
-
+def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
+    """Creates a new DNS record in the specified ZONE, for the specified DOMAIN,
+     of the given record TYPE.
 
     \b
-    Examples:
+    You may not create multiple records of the same TYPE for the same DOMAIN name in a ZONE.
+    Instead, add new ANSWERs to the existing record. The default behavior if no filters are
+    in the filter chain is to return all ANSWERs matching a query. The new record will take
+    on the same networks as the ZONE it's in.
+
+    \b
+    RECORD TYPES:
+        Currently supported record TYPEs are:
+          - A, AAAA, ALIAS, AFSDB, CNAME, DNAME, HINFO, MX, NAPTR, NS, PTR, RP, SPF, SRV, TXT.
+
+    \b
+    ANSWERS:
+        Multiple ANSWERs can be provided, along with RDATA fields for a DNS record of the specified TYPE.
+
+    \b
+    META DATA:
+        Metadata tables (meta) may be specified in ANSWERs, in regions or in the record as a whole.
+        The metadata tables may contain key/value pairs where valid keys and values are as described in the output of /metatypes.
+        See:
+          ns1 help record meta
+          ns1 help record region meta
+          ns1 help record answer meta
+
+    \b
+    DATA FEEDS:
+        Anywhere metadata tables can go, data feeds can go as well.
+        See:
+          ns1 help data
+
+    \b
+    LINKED RECORDS:
+        Instead of specifying answers and other details, you may create a "linked" record.
+        This allows you reuse the configuration (including answers and metadata) from an
+        existing record in NS1's systems. Linked records will respond in the exact same
+        way as their targets at DNS resolution time, and can be used for maintaining
+        complicated record configurations in a single record while pointing (linking)
+        other lightweight records to it. Linked records must point to another record of
+        the exact same record TYPE and do not have to exist in the same ZONE.
+
+        To create a linked record, specify the --target as a string whose contents is
+        the FQDN containing the config it should link to. If link is specified, no other
+        record configuration (such as answers or meta) should be specified.
+
+            record create --target test test.com linked A
+
+    \b
+    EXAMPLES:
         record create --ttl 200 test.com test A 1.1.1.1
-        record create --src_domain test test.com linked A
+        record create --target test test.com linked A
         record create test.com test A 1.1.1.1 2.2.2.2 3.3.3.3
         record create test.com mail MX --mx_priority 10 1.1.1.1
 
     \b
-    Notes:
+    NOTES:
         if record type is MX, each given answer MUST have priority:
           ... MX --mx_priority 10 1.1.1.1 --mx_priority 20 2.2.2.2
 
@@ -155,10 +198,10 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, src_domain):
 
     options['use_csubnet'] = use_client_subnet
 
-    if src_domain:
-        if src_domain.find('.') == -1:
-            src_domain = '%s.%s' % (src_domain, ctx.obj.ZONE)
-        options['link'] = src_domain
+    if target:
+        if target.find('.') == -1:
+            target = '%s.%s' % (target, ctx.obj.ZONE)
+        options['link'] = target
 
     if ctx.obj.TYPE == 'MX':
         if len(set(mx_priority)) != len(mx_priority):
@@ -188,12 +231,20 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, src_domain):
 @record_arguments
 @click.pass_context
 def delete(ctx):
-    """delete a record
+    """Removes an existing record and all associated answers and configuration
+    details. We will no longer respond for this record once it is deleted, and
+    it cannot be recovered, so use caution.
 
     \b
     Examples:
         record delete test.com test A
         record delete -f test.com test A
+
+    \b
+    NOTES:
+        This operation deletes all answers associated with the domain and record type.
+        If you want to delete individual answers, see:
+            ns1 record answer remove
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()

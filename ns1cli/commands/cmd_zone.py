@@ -38,7 +38,7 @@ def list(ctx):
     for each.
 
     \b
-    Examples:
+    EXAMPLES:
         zone list
     """
     try:
@@ -61,7 +61,7 @@ def info(ctx, zone):
     of each record, is also included.
 
     \b
-    Examples:
+    EXAMPLES:
         zone info test.com
     """
     try:
@@ -86,14 +86,14 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
     """Creates a new DNS ZONE. You must include at minimum the ZONE domain name.
 
     \b
-    You may create a:
+    ZONE TYPES:
         1) standard zone (which has its own configuration and records)
 
         2) linked zone (which points to an existing standard zone, reusing its
            configuration and records)
 
     \b
-    Examples:
+    EXAMPLES:
         zone create test.com
         zone create --link test.com linked.com
         zone create --nx_ttl 300 with.option
@@ -101,13 +101,12 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
 
 
     \b
-    For non-linked zones, you may specify optional zone configuration by including
-    ttl (SOA record TTL), refresh, retry, expiry, and nx_ttl values, as in a SOA record.
-    The zone is assigned DNS servers and appropriate NS records are automatically created,
-    unless you create a secondary zone.
+    LINKED ZONES:
+        For non-linked zones, you may specify optional zone configuration by including
+        ttl (SOA record TTL), refresh, retry, expiry, and nx_ttl values, as in a SOA record.
+        The zone is assigned DNS servers and appropriate NS records are automatically created,
+        unless you create a secondary zone.
 
-    \b
-    --link TARGET:
         To create a linked ZONE, you must include the --link option. It must be a string which
         references the TARGET zone (domain name) to link to. The TARGET zone must be owned by
         the same account that is creating the linked ZONE. If the link property is specified,
@@ -160,7 +159,7 @@ def set(ctx, nx_ttl, expiry, retry, refresh, zone):
     You may not change the ZONE name or other details.
 
     \b
-    Examples:
+    EXAMPLES:
         zone set --nt_ttl 200 --retry 5 test.com
         zone set -f --expiry 100 test.com
     """
@@ -200,7 +199,7 @@ def delete(ctx, zone):
     after you do this, and you cannot recover the deleted ZONE, so be careful!
 
     \b
-    Examples:
+    EXAMPLES:
         zone delete test.com
         zone delete -f test.com
     """
