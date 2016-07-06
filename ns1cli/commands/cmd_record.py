@@ -271,10 +271,12 @@ def meta(ctx):
 @click.argument('METAVAL')
 @click.pass_context
 def meta_set(ctx, metaval, metakey):
-    """set meta data key/value for a record.
+    """Set meta data key/value pairs for a record. This will set the meta data
+    for the entire record, which will be used for an answer if there is no
+    answer meta. See ns1 list meta types
 
     \b
-    Examples:
+    EXAMPLES:
          record meta set test.com geo A up false
     """
     if not ctx.obj.force:
@@ -299,11 +301,11 @@ def meta_set(ctx, metaval, metakey):
 @click.argument('METAKEY')
 @click.pass_context
 def meta_remove(ctx, metakey):
-    """remove meta data key from a record. If it doesn't exist, raise
-    cli exception
+    """Remove meta data key/value pairs for a record. This will remove a meta
+    data key for the entire record.
 
-    Examples:
-
+    \b
+    EXAMPLES:
          record meta remove test.com geo A up
     """
     if not ctx.obj.force:
@@ -343,10 +345,10 @@ def answer(ctx):
 @click.argument('ANSWER')
 @click.pass_context
 def add(ctx, mx_priority, answer):
-    """add an answer to a record
+    """Add an answer to a record.
 
-    Examples:
-
+    \b
+    EXAMPLES:
          record answer add geo.test geocname.geo.test CNAME 1.1.1.1
     """
     if not ctx.obj.force:
@@ -365,28 +367,28 @@ def add(ctx, mx_priority, answer):
     ctx.obj.formatter.print_record(record.data)
 
 
-@answer.command('remove', short_help='remove an answer from a record')
-@write_options
-@record_arguments
-@click.argument('ANSWER')
-@click.pass_context
-def remove(ctx, answer):
-    """remove an answer from a record
-
-    Examples:
-
-         record answer remove geo.test geocname.geo.test CNAME 1.1.1.1
-    """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
-
-    answer = [answer]
-    record = ctx.obj.nsone.loadRecord(ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE,
-                                      zone=ctx.obj.ZONE)
-    #@TODO: NOT WORKING
-    record = record.removeAnswers(answer)
-    ctx.obj.formatter.print_record(record.data)
+# @answer.command('remove', short_help='remove an answer from a record')
+# @write_options
+# @record_arguments
+# @click.argument('ANSWER')
+# @click.pass_context
+# def remove(ctx, answer):
+#     """remove an answer from a record
+#
+#     Examples:
+#
+#          record answer remove geo.test geocname.geo.test CNAME 1.1.1.1
+#     """
+#     if not ctx.obj.force:
+#         ctx.obj.check_write_lock()
+#
+#     answer = [answer]
+#     record = ctx.obj.nsone.loadRecord(ctx.obj.DOMAIN,
+#                                       ctx.obj.TYPE,
+#                                       zone=ctx.obj.ZONE)
+#     #@TODO: NOT WORKING
+#     record = record.removeAnswers(answer)
+#     ctx.obj.formatter.print_record(record.data)
 
 
 # @TODO: Have to wait for Click v7.0 for nested command chaining
@@ -413,15 +415,12 @@ def remove(ctx, answer):
 @click.argument('METAVAL')
 @click.pass_context
 def answer_meta_set(ctx, metaval, metakey, answer):
-    """set meta data key/value to an answer. If it doesn't exist
-    it will be added
+    """Set meta data key/value pairs for an answer. See ns1 list meta types
 
-    Examples:
-
+    \b
+    EXAMPLES:
          record answer meta-set test.com geo A 1.2.3.4 georegion US-WEST
-
          record answer meta-set test.com geo A 6.7.8.9 georegion US-EAST
-
          record answer meta-set test.com geo A 3.3.3.3 georegion US-CENTRAL
     """
     if not ctx.obj.force:
@@ -459,11 +458,10 @@ def answer_meta_set(ctx, metaval, metakey, answer):
 @click.argument('METAKEY')
 @click.pass_context
 def answer_meta_remove(ctx, metakey, answer):
-    """remove meta data key from an answer. If it doesn't exist, raise
-    cli exception
+    """Remove a meta data key/value pair from an answer.
 
-    Examples:
-
+    \b
+    EXAMPLES:
          record answer meta-remove test.com geo A 1.2.3.4 georegion
     """
     if not ctx.obj.force:
@@ -523,11 +521,16 @@ def region(ctx):
 @click.argument('region')
 @click.pass_context
 def add(ctx, region):
-    """add a region to a record
+    """Add a region to a record.
 
-    Examples:
-
+    \b
+    EXAMPLES:
          record region add geo.test geocname.geo.test CNAME us-west
+
+    \b
+    NOTES:
+         Regions can be any kind of group, not just geo-related.
+         For this reason, the NS1 web portal at my.nsone.net uses the word "group" instead of "region".
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -556,10 +559,10 @@ def add(ctx, region):
 @click.argument('region')
 @click.pass_context
 def remove(ctx, region):
-    """remove a region from a record
+    """Remove a region from a record.
 
-    Examples:
-
+    \b
+    EXAMPLES:
          record region remove geo.test geocname.geo.test CNAME us-west
     """
     if not ctx.obj.force:
@@ -595,11 +598,10 @@ def remove(ctx, region):
 @click.argument('METAVAL')
 @click.pass_context
 def region_meta_set(ctx, metaval, metakey, region):
-    """set meta data key/value to a region. If it doesn't exist
-    it will be added
+    """Set a meta data key/value for a region. See ns1 list meta types
 
-    Examples:
-
+    \b
+    EXAMPLES:
          record region meta-set test.com geo A us-west up false
     """
     if not ctx.obj.force:
@@ -635,11 +637,10 @@ def region_meta_set(ctx, metaval, metakey, region):
 @click.argument('METAKEY')
 @click.pass_context
 def region_meta_remove(ctx, metakey, region):
-    """remove meta data key from a region. if it doesn't exist, raise
-    cli exception.
+    """Remove a meta data key from a region.
 
     \b
-    Examples:
+    EXAMPLES:
          record region meta-remove test.com geo A us-west up
     """
     if not ctx.obj.force:
