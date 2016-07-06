@@ -9,51 +9,77 @@ ns1cli is a both a command line program and REPL for accessing NS1, the Data Dri
 
 ```
 $ ns1 -h
-usage: ns1 [-h] [-v ...] [-e <server>] [-k <key>] [-f <format>]
-           [-t <transport>] [--ignore-ssl-errors] [--version]
-           [<command>] [<args>...]
+Usage: ns1 help [OPTIONS] COMMAND [ARGS]...
+
+  If no command is specified, the NS1 console is opened to accept
+  interactive commands.
 
 Options:
-   -v                           Increase verbosity level. Can be used more
-                                than once
-   -k, --key <key>              Use the specified API Key
-   -e, --endpoint <server>      Use the specified server endpoint
-   -f, --format <format>        Output format: 'text'/'json'
-                                [default: 'text']
-   -t, --transport <transport>  Backend transport: 'basic'/'requests'/'twisted'
-                                [default: 'requests'] if installed, O/W 'basic'
-   --ignore-ssl-errors          Ignore SSL certificate errors
-   -h, --help                   Show main usage help
-
-If no command is specified, the NS1 console is opened to accept interactive
-commands.
+  -c, --config_path PATH        Use the specified config file
+  -k, --key TEXT                Use the specified API Key
+  -e, --endpoint TEXT           Use the specified server endpoint
+  --transport [basic|requests]  Client transport
+  --ignore-ssl-errors           Ignore SSL certificate errors
+  -h, --help                    Show this message and exit.
 
 Commands:
-   record    Create, retrieve, update, and delete records in a zone
-   config    View and manipulate configuration settings
-   help      Get help on a command
-   zone      Create, retrieve, update, and delete zone SOA data
-   qps       Retrieve real time queries per second
-
-See 'ns1 help <command>' for more information on a specific command.
-
+  config   view and modify local configuration settings
+  data     view and modify data sources/feeds
+  help     displays help for a sequence of commands
+  monitor  view monitoring jobs
+  record   view and modify records in a zone
+  stats    view usage/qps on zones and records
+  zone     view and modify zone SOA data
 ```
+
+See `ns1 help <command>` for more information on a specific command.
 
 ## REPL
 
-[![asciicast](https://asciinema.org/a/5nazwezog280u44okccrrjhop.png)](https://asciinema.org/a/5nazwezog280u44okccrrjhop)
+`$ ns1` will start the REPL
+
 
 Installation
 ============
+
+__From Pypi__:
 
 ```bash
 $ pip install ns1cli
 ```
 
-Documentation
-=============
+__To enable autocomplete from the command-line__:
 
-http://ns1.com/api/
+```bash
+$ eval "$(_NS1_COMPLETE=source ns1)"
+```
+
+__Local Development__:
+
+```bash
+$ cd <ns1cli directory>
+$ pip install --editable .
+```
 
 
+## TODO:
+
+- REPL
+	- Autocomplete commands
+
+- Search
+	- Autocomplete ZONE/DOMAIN/TYPE arguments.
+
+- Zones
+   - Create secondary zones
+   - Create zone from importing zonefile
+   - Missing create zone attributes:
+      - networks
+      - secondary attrs(primary ip, primary_port)
+      
+- Record
+   - Update/Set record level attributes(TTL, RETRY, etc)
+   
+   - Answers
+     - implement `ns1 record answer remove`
 
