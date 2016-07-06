@@ -333,7 +333,15 @@ def meta_remove(ctx, metakey):
 @cli.group('answer', chain=True, invoke_without_command=True)
 @click.pass_context
 def answer(ctx):
-    """view/modify record answer data"""
+    """View and modify record answer data
+
+    \b
+    An answer is the data associated with a DNS record that is the subject of a DNS query.
+    Unlike traditional DNS software, NS1 treats answers as entities on their own, with all
+    "potential" answers for a DNS record grouped under that record.  This enables us to make
+    complex decisions about which answers to return for a given record when we get a query
+    for the record.
+    """
     pass
 
 
@@ -345,7 +353,7 @@ def answer(ctx):
 @click.argument('ANSWER')
 @click.pass_context
 def add(ctx, mx_priority, answer):
-    """Add an answer to a record.
+    """Add an ANSWER to a record.
 
     \b
     EXAMPLES:
@@ -415,7 +423,7 @@ def add(ctx, mx_priority, answer):
 @click.argument('METAVAL')
 @click.pass_context
 def answer_meta_set(ctx, metaval, metakey, answer):
-    """Set meta data key/value pairs for an answer. See ns1 list meta types
+    """Set meta data KEY/VALUE pairs for an ANSWER. See ns1 list meta types
 
     \b
     EXAMPLES:
@@ -458,7 +466,7 @@ def answer_meta_set(ctx, metaval, metakey, answer):
 @click.argument('METAKEY')
 @click.pass_context
 def answer_meta_remove(ctx, metakey, answer):
-    """Remove a meta data key/value pair from an answer.
+    """Remove a meta data KEY/VALUE pair from an ANSWER.
 
     \b
     EXAMPLES:
@@ -511,17 +519,27 @@ def answer_meta_remove(ctx, metakey, answer):
 @cli.group('region', chain=True, invoke_without_command=True)
 @click.pass_context
 def region(ctx):
-    """view/modify record region data"""
+    """View and modify record region data
+
+    \b
+    Within a DNS record in NS1's platform, you can group answers into "regions".
+    Often these regions are geographical in nature, for example, you might lump
+    all your West coast servers into one region, and all your East coast servers
+    into a different one.
+
+    \b
+    But you can think of regions as general groupings of related servers that need not be geographical.
+    """
     pass
 
 
 @region.command('add', short_help='add a region to a record')
 @write_options
 @record_arguments
-@click.argument('region')
+@click.argument('REGION')
 @click.pass_context
 def add(ctx, region):
-    """Add a region to a record.
+    """Add a REGION to a record.
 
     \b
     EXAMPLES:
@@ -556,10 +574,10 @@ def add(ctx, region):
 @region.command('remove', short_help='remove a region from a record')
 @write_options
 @record_arguments
-@click.argument('region')
+@click.argument('REGION')
 @click.pass_context
 def remove(ctx, region):
-    """Remove a region from a record.
+    """Remove a REGION from a record.
 
     \b
     EXAMPLES:
@@ -598,7 +616,7 @@ def remove(ctx, region):
 @click.argument('METAVAL')
 @click.pass_context
 def region_meta_set(ctx, metaval, metakey, region):
-    """Set a meta data key/value for a region. See ns1 list meta types
+    """Set a meta data KEY/VALUE for a REGION. See ns1 list meta types
 
     \b
     EXAMPLES:
@@ -637,7 +655,7 @@ def region_meta_set(ctx, metaval, metakey, region):
 @click.argument('METAKEY')
 @click.pass_context
 def region_meta_remove(ctx, metakey, region):
-    """Remove a meta data key from a region.
+    """Remove a meta data KEY from a REGION.
 
     \b
     EXAMPLES:
