@@ -30,7 +30,6 @@ def cli(ctx, subcommands):
         ns1cli help record region
         ns1cli help record answer add
     """
-    # import ipdb; ipdb.set_trace()
     cmd = root_cli
     for cmd_name in subcommands:
         cmd = cmd.get_command(ctx, cmd_name)
@@ -58,5 +57,4 @@ def cli(ctx, subcommands):
         # )
     # return formatter.getvalue()
     help_text = formatter.getvalue()
-    import ipdb; ipdb.set_trace()
     click.echo_via_pager(help_text)
