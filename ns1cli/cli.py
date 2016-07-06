@@ -1,146 +1,190 @@
-# Copyright (c) 2014 NSONE, Inc.
-#
-# License under The MIT License (MIT). See LICENSE in project root.
-#
-
-"""
-usage: ns1 [-h] [-v ...] [-e <server>] [-k <key>] [-f <format>]
-           [-t <transport>] [--ignore-ssl-errors] [--version]
-           [<command>] [<args>...]
-
-Options:
-   -v                           Increase verbosity level
-   -k, --key <key>              Use the specified API Key
-   -e, --endpoint <server>      Use the specified server endpoint
-   -f, --format <format>        Output format: text/json
-                                [default: text]
-   -t, --transport <transport>  Backend transport: basic/requests/twisted
-                                [default: requests] if installed, O/W basic
-   --ignore-ssl-errors          Ignore SSL certificate errors
-   -h, --help                   Show main usage help
-
-If no command is specified, the NS1 console is opened to accept interactive
-commands.
-
-Commands:
-"""
-
-import sys
 import logging
-from docopt import docopt, DocoptExit
+import os
+import sys
+
+import click
 from nsone import NSONE
 from nsone.config import Config, ConfigException
-from nsone.rest.resource import ResourceException
-from ns1cli.version import VERSION
-from ns1cli.commands.base import BaseCommand, CommandException
+
 from ns1cli.repl import NS1Repl
-import ns1cli.commands
 
-
-# gather commands
-cmdList = {}
-for sym, ins in ns1cli.commands.__dict__.items():
-    if isinstance(ins, BaseCommand):
-        cmdList[sym] = ins
-
-# special case: give the full command list to help command so it can display
-# usage for all commands
-cmdList['help'].setCmdList(cmdList)
-
-# add to doc help
-cmdListDoc = ''
-for cname, cmd in cmdList.items():
-    cmdListDoc += '   %s%s\n' % (cname.ljust(10), cmd.SHORT_HELP)
-
-__doc__ += cmdListDoc
-__doc__ += "\nSee 'ns1 help <command>' for more information on a " \
-           "specific command."
-
-
+APP_NAME = 'NS1 CLI'
+VERSION = '0.1'
 BANNER = 'ns1 CLI version %s' % VERSION
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-def main():
-    args = docopt(__doc__, version=BANNER, options_first=True)
 
-    verbosity = args.get('-v', 0)
-    if verbosity > 1:
-        logging.basicConfig(level=logging.DEBUG)
-    elif verbosity > 0:
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.CRITICAL)
-    # tweak requests logging
-    if verbosity < 2:
-        requests_log = logging.getLogger("requests")
-        requests_log.setLevel(logging.WARNING)
+class State(object):
 
-    # if api key given, use a custom config
-    config = None
-    if args['--key']:
-        config = Config()
-        # this will save a .nsone with this key if one doesn't already exist
-        config.createFromAPIKey(args['--key'], maybeWriteDefault=True)
-        config['verbosity'] = verbosity
+    CLI_CONFIG_KEYS = ('output_format', 'write_lock')
 
-    try:
-        nsone = NSONE(config=config)
-    except ConfigException as e:
-        print(e.message)
-        sys.exit(1)
-    except IOError as e:
-        print('No config file was found. Either specify an API key (with -k) '
-              'on the command line, or create %s' % Config.DEFAULT_CONFIG_FILE)
-        sys.exit(1)
+    def __init__(self):
+        self.verbosity = 0
+        self.debug = False
+        self.output_format = 'text'
 
-    # do config overrides in nsone based on cmd args
-    if args['--format']:
-        nsone.config['cli']['output_format'] = args['--format']
+    def get_config(self, key):
+        if key in self.CLI_CONFIG_KEYS:
+            return self.nsone.config['cli'][key]
+        else:
+            return self.nsone.config[key]
 
-    # do defaults
-    if 'output_format' not in nsone.config.get('cli', {}):
-        nsone.config['cli']['output_format'] = 'text'
+    def set_config(self, key, value):
+        if key in self.CLI_CONFIG_KEYS:
+            self.nsone.config['cli'][key] = value
+        else:
+            self.nsone.config[key] = value
 
-    if args['--endpoint']:
-        nsone.config['endpoint'] = args['--endpoint']
+    def check_write_lock(self):
+        if self.nsone.config['cli'].get('write_lock', False):
+            raise click.BadOptionUsage('CLI is currently write locked.')
 
-    if args['--ignore-ssl-errors']:
-        nsone.config['ignore-ssl-errors'] = args['--ignore-ssl-errors']
-        if verbosity < 2:
-            logging.captureWarnings(True)
+    def load_nsone_client(self, **kwargs):
+        cfg = Config()
 
-    if args['--transport']:
-        nsone.config['transport'] = args['--transport']
+        if kwargs['config_path']:
+            # cfg_file = os.path.join(click.get_app_dir(APP_NAME), 'config.ini')
+            cfg.loadFromFile(kwargs['config_path'])
+        elif kwargs['key']:
+            # this will save a .nsone with this key if one doesn't already exist
+            cfg.createFromAPIKey(kwargs['key'], maybeWriteDefault=True)
+        else:
+            cfg.loadFromFile(Config.DEFAULT_CONFIG_FILE)
 
-    BaseCommand.nsone = nsone
+        cfg['endpoint'] = kwargs['endpoint']
+        cfg['transport'] = kwargs['transport']
+        cfg['ignore-ssl-errors'] = kwargs['ignore_ssl']
 
-    cmd = args['<command>']
+        if cfg['ignore-ssl-errors']:
+            if self.verbosity < 2:
+                logging.captureWarnings(True)
 
-    if not cmd:
-        info = "\nType 'help' for help\n\nCurrent Key: %s\nEndpoint: %s" % \
-               (nsone.config.getCurrentKeyID(), nsone.config.getEndpoint())
-        repl = NS1Repl(cmdListDoc, cmdList)
-        repl.interact(BANNER + info)
-        sys.exit(0)
-    cmdArgs = args['<args>']
-    subArgv = [cmd] + cmdArgs
-
-    if cmd in cmdList.keys():
-        svc = cmdList[cmd]
         try:
-            subArgs = docopt(svc.__doc__, argv=subArgv, options_first=True)
-        except DocoptExit as e:
-            if cmd == 'help':
-                print(__doc__)
-            else:
-                print(e.usage)
-            sys.exit(1)
-        try:
-            svc.run(subArgs)
-        except ResourceException as e:
-            print('REST API error: %s' % e.message)
-        except CommandException as e:
+            self.nsone = NSONE(config=cfg)
+        except ConfigException as e:
             print(e.message)
             sys.exit(1)
-    else:
-        exit("%r is not a command. See 'ns1 help'." % cmd)
+        except IOError:
+            print('No config file was found. Either specify an API key (with -k) '
+                  'on the command line, or create %s' % Config.DEFAULT_CONFIG_FILE)
+            sys.exit(1)
+
+        self.set_config('output_format', self.output_format)
+
+pass_state = click.make_pass_decorator(State, ensure=True)
+
+
+def verbosity_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.verbosity = value
+        return value
+    return click.option('-v', '--verbose', count=True,
+                        expose_value=False,
+                        help='Enables verbosity',
+                        callback=callback)(f)
+
+
+def debug_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.debug = value
+        return value
+    return click.option('--debug/--no-debug',
+                        expose_value=False,
+                        help='Enables or disables debug mode.',
+                        callback=callback)(f)
+
+
+def output_format_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.output_format = value
+        return value
+    return click.option('-o', '--output_format',
+                        type=click.Choice(['text', 'json']),
+                        expose_value=False,
+                        help='Output format',
+                        default='text',
+                        callback=callback)(f)
+
+
+def common_options(f):
+    f = output_format_option(f)
+    f = verbosity_option(f)
+    f = debug_option(f)
+    return f
+
+
+def force_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.force = value
+        return value
+    return click.option('-f/--force',
+                        expose_value=False,
+                        is_flag=True,
+                        help='Force: override the write lock if one exists',
+                        callback=callback)(f)
+
+
+def write_options(f):
+    f = force_option(f)
+    return f
+
+
+cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                          'commands'))
+
+
+class NS1Cli(click.MultiCommand):
+
+    def list_commands(self, ctx):
+        rv = []
+        for filename in os.listdir(cmd_folder):
+            if filename.endswith('.py') and \
+               filename.startswith('cmd_'):
+                rv.append(filename[4:-3])
+        rv.sort()
+        return rv
+
+    def get_command(self, ctx, name):
+        try:
+            if sys.version_info[0] == 2:
+                name = name.encode('ascii', 'replace')
+            mod = __import__('ns1cli.commands.cmd_' + name,
+                             None, None, ['cli'])
+        except ImportError:
+            return
+        return mod.cli
+
+
+@click.group(cls=NS1Cli, invoke_without_command=True,
+             context_settings=CONTEXT_SETTINGS)
+@click.option('-c', '--config_path', help='Use the specified config file',
+              type=click.Path(exists=True))
+@click.option('-k', '--key', help='Use the specified API Key')
+@click.option('-e', '--endpoint', help='Use the specified server endpoint')
+@click.option('--transport', help='Client transport', default='requests',
+              type=click.Choice(['basic', 'requests']))
+@click.option('--ignore-ssl-errors', help='Ignore SSL certificate errors',
+              default=False, is_flag=True)
+@pass_state
+@click.pass_context
+def cli(ctx, state, ignore_ssl_errors, transport, endpoint, key, config_path):
+    """
+    If no command is specified, the NS1 console is opened to accept interactive
+    commands."""
+    state.load_nsone_client(config_path=config_path,
+                            key=key,
+                            endpoint=endpoint,
+                            transport=transport,
+                            ignore_ssl=ignore_ssl_errors)
+
+    ctx.obj = state
+
+    if not ctx.invoked_subcommand:
+        repl = NS1Repl(ctx, cli)
+        repl.interact(BANNER)
+        sys.exit(0)

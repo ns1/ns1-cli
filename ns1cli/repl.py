@@ -1,35 +1,32 @@
-#
-# Copyright (c) 2014 NSONE, Inc.
-#
-# License under The MIT License (MIT). See LICENSE in project root.
-#
-
-"""
-usage: ns1> <command> [<args>...]
-
-Commands:
-"""
-
-import readline
-import code
-from docopt import docopt, DocoptExit
-from ns1cli.commands.base import CommandException
-from nsone.rest.resource import ResourceException
-import os
-import sys
 import atexit
+import code
+import os
+import readline
+import shlex
+import sys
+
+import click
+from nsone.rest.resource import ResourceException
+
+from ns1cli import __version__
+
+APP_NAME = 'NS1 CLI'
+BANNER = 'ns1 CLI version %s' % __version__
 
 
 class NS1Repl(code.InteractiveConsole):
 
-    HISTORY_FILE = '~/.ns1_history'
+    HISTORY_FILE = '.ns1_history'
     HISTORY_LEN = 1000
 
-    def __init__(self, cmdListDoc, cmdList):
+    def __init__(self, ctx, cli):
+        self.ctx = ctx
+        self.cli = cli
+        self.exit_cmds = ['quit', 'exit']
+
         code.InteractiveConsole.__init__(self)
-        self._doc = __doc__ + cmdListDoc
-        self._cmdList = cmdList
-        history_file = os.path.expanduser(self.HISTORY_FILE)
+        # app_dir = click.get_app_dir(APP_NAME)
+        history_file = os.path.expanduser('~/' + self.HISTORY_FILE)
         try:
             readline.read_history_file(history_file)
         except IOError:
@@ -47,45 +44,51 @@ class NS1Repl(code.InteractiveConsole):
         """
         intercept ns1 commands and run them
         """
-        args = docopt(self._doc,
-                      argv=str(source).split(' '),
-                      options_first=True)
-        # print args
-        cmd = args['<command>']
-        cmdArgs = args['<args>']
-        if type(cmdArgs) is not list:
-            cmdArgs = [cmdArgs]
-        subArgv = [cmd] + cmdArgs
-        # ls command == 'zone list'
-        if cmd == 'ls':
-            cmd = 'zone'
-            subArgv = ['zone', 'list']
-        #
-        if cmd in self._cmdList.keys():
-            svc = self._cmdList[cmd]
-            try:
-                subArgs = docopt(svc.__doc__, argv=subArgv)
-            except DocoptExit as e:
-                if cmd == 'help':
-                    print(self._doc)
-                else:
-                    # in repl, replace the require preceding 'ns1' with ''
-                    print(e.usage.replace(' ns1', ''))
+        if not source:
+            return
+
+        command = shlex.split(source)
+
+        if command[0] in self.exit_cmds:
+            sys.exit(0)
+        elif command[0] == 'clear':
+            click.clear()
+            return
+        elif command[0] == 'help':
+            cmd = self.cli
+            for cmd_name in command[1:]:
+                cmd = cmd.get_command(self.ctx, cmd_name)
+
+            if not cmd:
+                click.echo('Unknown command sequence %s' % command)
                 return
+
+            help_text = cmd.get_help(self.ctx)
+            click.echo_via_pager(help_text)
+            return
+
+        try:
+            help_idx = command.index('help')
+            command[help_idx] = '--help'
+        except ValueError:
+            pass
+
+        subgroup = self.cli.get_command(self.ctx, command[0])
+
+        if subgroup:
             try:
-                svc.run(subArgs)
+                with subgroup.make_context(None, command[1:], parent=self.ctx) as sub_ctx:
+                    subgroup.invoke(sub_ctx)
+                    sub_ctx.exit()
+            except click.ClickException as e:
+                e.show()
             except ResourceException as e:
-                print('REST API error: %s' % e.message)
+                click.echo('REST API error: %s' % e.message)
                 return
-            except CommandException as e:
-                print(e.message)
-                return
+            except SystemExit:
+                pass
         else:
-            # run as normal python?
-            # code.InteractiveConsole.runsource(self, source, filename, symbol)
-            if cmd == 'quit' or cmd == 'exit':
-                sys.exit(0)
-            print("unknown command '%s': try 'help'" % cmd)
+            click.echo("unknown command '%s': try 'help'" % command[0])
 
     def raw_input(self, prompt):
         return code.InteractiveConsole.raw_input(self, prompt='ns1> ')
@@ -109,3 +112,5 @@ class NS1Repl(code.InteractiveConsole):
             return self.completion_matches[state]
         except IndexError:
             return None
+
+

@@ -1,3 +1,4 @@
-docopt==0.6.2
+click==6.6
 nsone==0.9.3
+requests
 six

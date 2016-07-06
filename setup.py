@@ -1,35 +1,28 @@
-import os
-import sys
-
-from ns1cli.version import VERSION
+from ns1cli import __version__
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
-path, script = os.path.split(sys.argv[0])
-os.chdir(os.path.abspath(path))
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'ns1cli'))
-
 setup(
     name='ns1cli',
-    version=VERSION,
+    version=__version__,
     description='NS1 command line interface',
     author='Shannon Weyrick',
     author_email='sweyrick@ns1.com',
     url='https://ns1.com/',
     packages=['ns1cli', 'ns1cli.commands'],
-    scripts=['bin/ns1'],
+    include_package_date=True,
     entry_points={
         'console_scripts': [
-            'ns1=ns1cli.cli:main'
+            'ns1=ns1cli.cli:cli'
         ],
     },
     install_requires=[
-        'docopt==0.6.2',
+        'click==6.6',
         'nsone==0.9.3',
+        'requests',
         'six'
     ],
     setup_requires=['pytest-runner'],
