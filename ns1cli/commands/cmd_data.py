@@ -34,6 +34,18 @@ def cli(ctx):
 @cli.group('source', short_help='view and modify data sources')
 @click.pass_context
 def source(ctx):
+    """View and modify data sources.
+
+    \b
+    Data Sources are the workhorses behind NS1's powerful Data Driven DNS.
+    NS1 supports many different kinds of Data Sources, from widely used
+    monitoring services to our own native NS1 API. Think of a single Data Source
+    like an account for the associated service, that you're connecting to NS1.
+
+    For example, if you create an Amazon Cloudwatch Data Source, it corresponds
+    to your AWS account; you could also create a second Cloudwatch Data Source
+    if you have a different AWS account to connect to NS1.
+    """
     ctx.obj.datasource_api = ctx.obj.nsone.datasource()
 
 
@@ -142,6 +154,28 @@ def delete(ctx, sourceid):
 @cli.group('feed', short_help='view and modify data feeds')
 @click.pass_context
 def feed(ctx):
+    """View and modify data feeds.
+
+    \b
+    Data Feeds come from Data Sources and can be thought of like "topics".
+    For example, if you have connected a Cloudwatch Data Source, you might
+    create several Data Feeds from that source corresponding to different
+    Cloudwatch monitors.
+
+    Data Feeds are generally identified by service-specific details like monitor
+    or health check ids, unique labels, etc.  Each Data Feed generates metadata
+    updates specific to its "topic". For example, a Data Feed from a Cloudwatch
+    monitor may update "up" metadata depending on the status of the monitor.A
+    Data Feed, once it is created, can be connected to one or more metadata tables
+    in any of your DNS records.
+
+    It is perfectly normal to connect a single Data Feed to many different metadata tables.
+    In fact, this can be incredibly powerful. For example, if you have a shared web server
+    hosting several sites, you may have an answer corresponding to that server in the DNS
+    records for all the sites. Connecting a monitoring Data Feed to those answers
+    (and configuring appropriate filters) means they will all failover instantly when the
+    monitor trips.
+    """
     ctx.obj.datafeed_api = ctx.obj.nsone.datafeed()
 
 

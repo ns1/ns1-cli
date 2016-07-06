@@ -30,7 +30,15 @@ class MonitorFormatter(Formatter):
              short_help='view monitoring jobs')
 @click.pass_context
 def cli(ctx):
-    """View monitoring jobs."""
+    """View monitoring jobs.
+
+    \b
+    In addition to our API and native integrations, we offer monitoring jobs
+    run over ICMP or TCP from up to five locations across the globe. Our built
+    in monitoring capabilities provide a quick and easy way to detect a down server
+    and, because its fully integrated with out Filter Chain technology, the ability
+    to reroute traffic based upon real time infrastructure telemetry.
+    """
     ctx.obj.formatter = MonitorFormatter(ctx.obj.get_config('output_format'))
     ctx.obj.monitor_api = ctx.obj.nsone.monitors()
 
@@ -41,10 +49,14 @@ def cli(ctx):
               type=click.Choice(['id', 'job_type']))
 @click.pass_context
 def list(ctx, include):
-    """List all active monitors.
+    """List of all monitoring jobs for the account, including configuration and
+    current status details. Job status is shown per region, including the "global"
+    region indicating the overal status of the monitoring job computed based on
+    the status policy from the regional statuses. Status values both globally and
+    per region include up, down, and pending.
 
     \b
-    Examples:
+    EXAMPLES:
         monitor list
         monitor list --include id
         monitor list --include id --include job_type
@@ -68,10 +80,14 @@ def list(ctx, include):
 @click.argument('JOBID')
 @click.pass_context
 def info(ctx, jobid):
-    """Get monitor details
+    """Display details for a specific monitoring job based on its JOBID, including
+    configuration and current status details. Job status is shown per region,
+    including the "global" region indicating the overall status of the monitoring
+    job computed based on the status policy from the regional statuses.
+    Status values both globally and per region include up, down, and pending.
 
     \b
-    Examples:
+    EXAMPLES:
         monitor info 531a047f830f7803d5f0d2ca
     """
     try:
