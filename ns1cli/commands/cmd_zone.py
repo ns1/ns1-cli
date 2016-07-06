@@ -56,7 +56,9 @@ def list(ctx):
 @click.argument('zone')
 @click.pass_context
 def info(ctx, zone):
-    """Get zone details
+    """Returns a single active ZONE and its basic configuration details.
+    For convenience, a list of records in the ZONE, and some basic details
+    of each record, is also included.
 
     \b
     Examples:
@@ -81,7 +83,14 @@ def info(ctx, zone):
 @click.option('--nx_ttl', help='SOA NX TTL', type=int)
 @click.pass_context
 def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
-    """Create a new zone
+    """Creates a new DNS ZONE. You must include at minimum the ZONE domain name.
+
+    \b
+    You may create a:
+        1) standard zone (which has its own configuration and records)
+
+        2) linked zone (which points to an existing standard zone, reusing its
+           configuration and records)
 
     \b
     Examples:
@@ -89,6 +98,25 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
         zone create --link test.com linked.com
         zone create --nx_ttl 300 with.option
         zone create --nx_ttl=300 with.option
+
+
+    \b
+    For non-linked zones, you may specify optional zone configuration by including
+    ttl (SOA record TTL), refresh, retry, expiry, and nx_ttl values, as in a SOA record.
+    The zone is assigned DNS servers and appropriate NS records are automatically created,
+    unless you create a secondary zone.
+
+    \b
+    --link TARGET:
+        To create a linked ZONE, you must include the --link option. It must be a string which
+        references the TARGET zone (domain name) to link to. The TARGET zone must be owned by
+        the same account that is creating the linked ZONE. If the link property is specified,
+        no other zone configuration properties (such as refresh, retry, etc) may be specified,
+        since they are all pulled from the TARGET zone. Linked zones, once created, cannot be
+        configured at all and cannot have records added to them. They may only be deleted,
+        which does not affect the TARGET zone at all.
+
+
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -127,7 +155,9 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
 @write_options
 @click.pass_context
 def set(ctx, nx_ttl, expiry, retry, refresh, zone):
-    """Set zone attributes
+    """Modify basic details of a DNS ZONE. Details include ttl (SOA record TTL),
+    refresh, retry, expiry, or nx_ttl values, as in a SOA record.
+    You may not change the ZONE name or other details.
 
     \b
     Examples:
@@ -165,7 +195,9 @@ def set(ctx, nx_ttl, expiry, retry, refresh, zone):
 @write_options
 @click.pass_context
 def delete(ctx, zone):
-    """Delete a zone and all records it contains
+    """Destroys an existing DNS ZONE and all records in the ZONE.
+    NS1 servers won't respond to queries for the zone or any of the records
+    after you do this, and you cannot recover the deleted ZONE, so be careful!
 
     \b
     Examples:
