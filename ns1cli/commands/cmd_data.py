@@ -27,7 +27,16 @@ class DataFormatter(Formatter):
              short_help='view and modify data sources/feeds')
 @click.pass_context
 def cli(ctx):
-    """Create, retrieve, update, and delete data sources/feeds."""
+    """Create, retrieve, update, and delete data sources/feeds.
+
+    \b
+    NS1's intelligent platform goes beyond even "advanced" DNS and introduces
+    a new paradigm: Data Driven DNS. NS1's Data Driven DNS takes in real time
+    feeds of data about your infrastructure, like server upness, load,
+    response times, application metrics, and so on, and feeds them to our traffic
+    management algorithms to adjust DNS responses on the fly.  No other DNS provider
+    on the planet is as tightly coupled to your application.
+    """
     ctx.obj.formatter = DataFormatter(ctx.obj.get_config('output_format'))
 
 
@@ -55,13 +64,14 @@ def source(ctx):
               type=click.Choice(['id', 'sourcetype']))
 @click.pass_context
 def list(ctx, include):
-    """List all data sources.
+    """List of all connected data sources, and for each data source, all
+    connected feeds including connected metadata table destinations.
 
     \b
-    Examples:
-        source list
-        source list --include id
-        source list --include id --include sourcetype
+    EXAMPLES:
+        ns1 source list
+        ns1 source list --include id
+        ns1 source list --include id --include sourcetype
     """
     try:
         slist = ctx.obj.datasource_api.list()
@@ -82,11 +92,13 @@ def list(ctx, include):
 @click.argument('SOURCEID')
 @click.pass_context
 def info(ctx, sourceid):
-    """Get data source details
+    """Display details for a single data source(given its SOURCEID), including
+    configuration, all connected data feeds, and within data feeds, any connected
+    metadata table (destinations).
 
     \b
-    Examples:
-        data source info 531a047f830f7803d5f0d2ca
+    EXAMPLES:
+        ns1 data source info 531a047f830f7803d5f0d2ca
     """
     try:
         sdata = ctx.obj.datasource_api.retrieve(sourceid)
@@ -106,12 +118,22 @@ def info(ctx, sourceid):
 @click.argument('NAME')
 @click.pass_context
 def create(ctx, name, sourcetype, config):
-    """Create a new data source
+    """Creates a new data source with NAME and SOURCETYPE. You may create
+    multiple data sources of the same type, e.g., to correspond to different
+    accounts with a data provider.
 
     \b
-    Examples:
-        source create nsone_v1 new_nsone_source
-        source create rackspace new_rackspace_source --config webhook_token token
+    CONFIG:
+        The --config option for the source must contain fields corresponding
+        to the config description in /data/sourcetypes for the SOURCETYPE you
+        specify. Some data sources are immediately connected; others enter a
+        pending state awaiting activity from the data source, e.g., a verification
+        request. See the documentation for the source from /data/sourcetypes.
+
+    \b
+    EXAMPLES:
+        ns1 source create nsone_v1 new_nsone_source
+        ns1 source create rackspace new_rackspace_source --config webhook_token token
 
     """
     if not ctx.obj.force:
@@ -134,13 +156,15 @@ def create(ctx, name, sourcetype, config):
 @write_options
 @click.pass_context
 def delete(ctx, sourceid):
-    """Delete a data source. This will also delete all
-    associated feeds.
+    """Removes an existing data source with SOURCEID and all connected feeds
+    from the source. By extension, all metadata tables connected to those feeds
+    will no longer receive updates. We will no longer accept updates on the
+    Feed URL for this data source.
 
     \b
-    Examples:
-        source delete 1234
-        source delete -f 1234
+    EXAMPLES:
+        ns1 source delete 1234
+        ns1 source delete -f 1234
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -186,13 +210,17 @@ def feed(ctx):
 @click.argument('SOURCEID')
 @click.pass_context
 def list(ctx, sourceid, include):
-    """List all data feeds for a data source
+    """Lists all data feeds connected to a source with SOURCEID.
+    Includes config details for each feed which match the
+    feed_config specification from /data/sourcetypes, and also
+    includes a list of metadata tables that are destinations
+    for each feed.
 
     \b
-    Examples:
-        feed list SOURCEID
-        feed list --include id SOURCEID
-        feed list --include id --include sourcetype SOURCEID
+    EXAMPLES:
+        ns1 feed list SOURCEID
+        ns1 feed list --include id SOURCEID
+        ns1 feed list --include id --include sourcetype SOURCEID
     """
     try:
         flist = ctx.obj.datafeed_api.list(sourceid)
@@ -216,11 +244,13 @@ def list(ctx, sourceid, include):
 @click.argument('FEEDID')
 @click.pass_context
 def info(ctx, sourceid, feedid):
-    """Get data feed details.
+    """Display details of a single data feed with FEEDID, belonging to data source
+    SOURCEID. Includes config details and any record, region, or answer metadata
+    table destinations.
 
     \b
-    Examples:
-        data feed info 123.. 123..
+    EXAMPLES:
+        ns1 data feed info 123.. 123..
     """
     try:
         fdata = ctx.obj.datafeed_api.retrieve(sourceid, feedid)
@@ -238,12 +268,14 @@ def info(ctx, sourceid, feedid):
 @click.argument('NAME')
 @click.pass_context
 def create(ctx, sourceid, name, config):
-    """Create a new data feed.
+    """Given an existing data source SOURCEID, connects a new data feed to
+    the source with a given NAME and --config matching the specification
+    in feed_config from /data/sourcetypes.
 
     \b
-    Examples:
-        source create 1234 new_data_feed
-        source create 1234 new_data_feed --config label answer1
+    EXAMPLES:
+        ns1 source create 1234 new_data_feed
+        ns1 source create 1234 new_data_feed --config label answer1
 
     """
     if not ctx.obj.force:

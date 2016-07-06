@@ -93,8 +93,8 @@ def info(ctx):
 
     \b
     EXAMPLES:
-        record info test.com test A
-        record info test.com foo CNAME
+        ns1 record info test.com test A
+        ns1 record info test.com foo CNAME
 
     \b
     NOTES:
@@ -178,10 +178,10 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
 
     \b
     EXAMPLES:
-        record create --ttl 200 test.com test A 1.1.1.1
-        record create --target test test.com linked A
-        record create test.com test A 1.1.1.1 2.2.2.2 3.3.3.3
-        record create test.com mail MX --mx_priority 10 1.1.1.1
+        ns1 record create --ttl 200 test.com test A 1.1.1.1
+        ns1 record create --target test test.com linked A
+        ns1 record create test.com test A 1.1.1.1 2.2.2.2 3.3.3.3
+        ns1 record create test.com mail MX --mx_priority 10 1.1.1.1
 
     \b
     NOTES:
@@ -237,8 +237,8 @@ def delete(ctx):
 
     \b
     Examples:
-        record delete test.com test A
-        record delete -f test.com test A
+        ns1 record delete test.com test A
+        ns1 record delete -f test.com test A
 
     \b
     NOTES:
@@ -260,7 +260,7 @@ def delete(ctx):
 @cli.group('meta')
 @click.pass_context
 def meta(ctx):
-    """view/modify record meta data"""
+    """View and modify record meta data"""
     pass
 
 
@@ -277,7 +277,7 @@ def meta_set(ctx, metaval, metakey):
 
     \b
     EXAMPLES:
-         record meta set test.com geo A up false
+         ns1 record meta set test.com geo A up false
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -306,7 +306,7 @@ def meta_remove(ctx, metakey):
 
     \b
     EXAMPLES:
-         record meta remove test.com geo A up
+         ns1 record meta remove test.com geo A up
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -357,7 +357,7 @@ def add(ctx, mx_priority, answer):
 
     \b
     EXAMPLES:
-         record answer add geo.test geocname.geo.test CNAME 1.1.1.1
+         ns1 record answer add geo.test geocname.geo.test CNAME 1.1.1.1
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -427,9 +427,9 @@ def answer_meta_set(ctx, metaval, metakey, answer):
 
     \b
     EXAMPLES:
-         record answer meta-set test.com geo A 1.2.3.4 georegion US-WEST
-         record answer meta-set test.com geo A 6.7.8.9 georegion US-EAST
-         record answer meta-set test.com geo A 3.3.3.3 georegion US-CENTRAL
+         ns1 record answer meta-set test.com geo A 1.2.3.4 georegion US-WEST
+         ns1 record answer meta-set test.com geo A 6.7.8.9 georegion US-EAST
+         ns1 record answer meta-set test.com geo A 3.3.3.3 georegion US-CENTRAL
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -470,7 +470,7 @@ def answer_meta_remove(ctx, metakey, answer):
 
     \b
     EXAMPLES:
-         record answer meta-remove test.com geo A 1.2.3.4 georegion
+         ns1 record answer meta-remove test.com geo A 1.2.3.4 georegion
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -543,7 +543,7 @@ def add(ctx, region):
 
     \b
     EXAMPLES:
-         record region add geo.test geocname.geo.test CNAME us-west
+         ns1 record region add geo.test geocname.geo.test CNAME us-west
 
     \b
     NOTES:
@@ -581,7 +581,7 @@ def remove(ctx, region):
 
     \b
     EXAMPLES:
-         record region remove geo.test geocname.geo.test CNAME us-west
+         ns1 record region remove geo.test geocname.geo.test CNAME us-west
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -620,7 +620,7 @@ def region_meta_set(ctx, metaval, metakey, region):
 
     \b
     EXAMPLES:
-         record region meta-set test.com geo A us-west up false
+         ns1 record region meta-set test.com geo A us-west up false
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -659,7 +659,7 @@ def region_meta_remove(ctx, metakey, region):
 
     \b
     EXAMPLES:
-         record region meta-remove test.com geo A us-west up
+         ns1 record region meta-remove test.com geo A us-west up
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()

@@ -25,10 +25,10 @@ def cli(ctx, subcommands):
 
     \b
     Examples:
-        ns1cli help record
-        ns1cli help record answer
-        ns1cli help record region
-        ns1cli help record answer add
+        ns1 help record
+        ns1 help record answer
+        ns1 help record region
+        ns1 help record answer add
     """
     cmd = root_cli
     for cmd_name in subcommands:
