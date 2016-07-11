@@ -1,3 +1,5 @@
+import os
+
 import click
 
 from nsone.config import ConfigException
@@ -69,3 +71,27 @@ def key(ctx, keyid):
         click.secho('Endpoint: %s' % ctx.obj.rest.config.getEndpoint(), bold=True)
     except ConfigException as e:
         raise click.ClickException(e.message)
+
+
+@cli.command('save', short_help='save the current config')
+@click.argument('PATH', required=False)
+@click.pass_context
+def key(ctx, path):
+    """Writes the current config to PATH if given,
+    otherwise the ns1 directory.
+
+    \b
+    EXAMPLES:
+        ns1 config save
+        ns1 config save ~/ns1conf
+    """
+    if not path:
+        path = os.path.join(ctx.obj.home_dir, ctx.obj.DEFAULT_CONFIG_FILE)
+
+    try:
+        ctx.obj.rest.config.write(path)
+        click.secho('Saved config at {}'.format(path), bold=True)
+    except ConfigException as e:
+        raise click.ClickException(e.message)
+
+

@@ -16,7 +16,7 @@ BANNER = 'ns1 CLI version %s' % __version__
 
 class NS1Repl(code.InteractiveConsole):
 
-    HISTORY_FILE = '.ns1_history'
+    HISTORY_FILE = 'ns1_history'
     HISTORY_LEN = 1000
 
     def __init__(self, ctx, cli):
@@ -25,8 +25,7 @@ class NS1Repl(code.InteractiveConsole):
         self.exit_cmds = ['quit', 'exit']
 
         code.InteractiveConsole.__init__(self)
-        # app_dir = click.get_app_dir(APP_NAME)
-        history_file = os.path.expanduser('~/' + self.HISTORY_FILE)
+        history_file = os.path.join(ctx.obj.home_dir, self.HISTORY_FILE)
         try:
             readline.read_history_file(history_file)
         except IOError:
@@ -55,16 +54,7 @@ class NS1Repl(code.InteractiveConsole):
             click.clear()
             return
         elif command[0] == 'help':
-            cmd = self.cli
-            for cmd_name in command[1:]:
-                cmd = cmd.get_command(self.ctx, cmd_name)
-
-            if not cmd:
-                click.echo('Unknown command sequence %s' % command)
-                return
-
-            help_text = cmd.get_help(self.ctx)
-            click.echo_via_pager(help_text)
+            click.echo(self.cli.get_help(self.ctx))
             return
 
         try:

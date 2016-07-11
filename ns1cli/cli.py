@@ -40,15 +40,19 @@ class NS1Cli(click.MultiCommand):
 
 class State(object):
 
-    APP_NAME = 'NS1CLI'
+    APP_NAME = 'ns1'
 
-    DEFAULT_CONFIG_FILE = '.ns1'
+    DEFAULT_CONFIG_FILE = 'config'
 
     DEFAULT_CONFIG = {'debug': False,
                       'output_format': 'text',
                       'verbosity': 0}
 
     def __init__(self):
+        self.home_dir = click.get_app_dir(self.APP_NAME, force_posix=True)
+        if not os.path.exists(self.home_dir):
+            os.makedirs(self.home_dir)
+
         # Config vars are saved/accessed through rest client.
         # self.rest.config['cli']
         self.rest = None
@@ -100,10 +104,9 @@ class State(object):
         elif opts.get('api_key'):
             cfg.createFromAPIKey(opts['api_key'])
         else:
-            path = os.path.join(click.get_app_dir(self.APP_NAME),
-                                self.DEFAULT_CONFIG_FILE)
+            path = os.path.join(self.home_dir, self.DEFAULT_CONFIG_FILE)
             if os.path.exists(path):
-                cfg.loadFromFile('~/.nope')
+                cfg.loadFromFile(path)
 
         if opts.get('api_key_id'):
             cfg.useKeyId(opts['api_key_id'])
@@ -115,6 +118,9 @@ class State(object):
             cfg['ignore-ssl-errors'] = opts['ignore_ssl']
             if self.cfg['verbosity'] < 2:
                 logging.captureWarnings(True)
+
+        for k, v in self.cfg.items():
+            cfg['cli'][k] = v
 
         self.rest = NSONE(config=cfg)
 
@@ -285,4 +291,3 @@ def cli(ctx, state):
         repl = NS1Repl(ctx, cli)
         repl.interact(BANNER)
         sys.exit(0)
-
