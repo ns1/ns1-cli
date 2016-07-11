@@ -124,8 +124,7 @@ def create(ctx, name, sourcetype, config):
         ns1 source create rackspace new_rackspace_source --config webhook_token token
 
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     options = {'config': {}}
     for key, val in config:
