@@ -143,9 +143,10 @@ def verbosity_option(f):
         state = ctx.ensure_object(State)
         state.cfg['verbosity'] = value
         return value
-    return click.option('-v', '--verbose', count=True,
+    return click.option('-v', count=True,
+                        show_default=True,
                         expose_value=False,
-                        help='Enables verbosity',
+                        help='Verbosity',
                         callback=callback)(f)
 
 
@@ -154,9 +155,11 @@ def debug_option(f):
         state = ctx.ensure_object(State)
         state.cfg['debug'] = value
         return value
-    return click.option('--debug/--no-debug',
+    return click.option('--debug',
+                        is_flag=True,
+                        show_default=True,
                         expose_value=False,
-                        help='Enables or disables debug mode.',
+                        help='Enables debug mode',
                         callback=callback)(f)
 
 
@@ -165,18 +168,19 @@ def output_format_option(f):
         state = ctx.ensure_object(State)
         state.cfg['output_format'] = value
         return value
-    return click.option('-o', '--output_format',
+    return click.option('-o', '--output',
+                        show_default=True,
                         type=click.Choice(['text', 'json']),
                         expose_value=False,
-                        help='Output format',
+                        help='Display format',
                         default='text',
                         callback=callback)(f)
 
 
 def common_options(f):
     f = output_format_option(f)
-    f = verbosity_option(f)
     f = debug_option(f)
+    f = verbosity_option(f)
     return f
 
 
@@ -272,8 +276,8 @@ def ignore_ssl_option(f):
 def ns1_client_options(f):
     f = config_path_option(f)
     f = api_key_option(f)
-    f = api_key_id_option(f)
     f = endpoint_option(f)
+    f = api_key_id_option(f)
     f = transport_option(f)
     f = ignore_ssl_option(f)
     return f
