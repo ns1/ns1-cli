@@ -73,6 +73,8 @@ class State(object):
             self.log(msg, *args)
 
     def get_config(self, key):
+        """First checks the rest config cli attr, then the rest config itself.
+        Raises ClickException if key doesnt exist."""
         if key in self.cfg:
             return self.cfg[key]
         else:
@@ -82,6 +84,7 @@ class State(object):
                 raise click.ClickException('Unknown config key {0}'.format(key))
 
     def set_config(self, key, value):
+        """Sets config key-value pair."""
         if key in self.cfg:
             self.cfg[key] = value
             self.rest.config['cli'][key] = value
@@ -120,8 +123,11 @@ class State(object):
             cfg['transport'] = opts['transport']
         if opts.get('ignore_ssl'):
             cfg['ignore-ssl-errors'] = opts['ignore_ssl']
-            if self.cfg['verbosity'] < 2:
-                logging.captureWarnings(True)
+
+        if cfg['ignore-ssl-errors']:
+            import requests
+            from requests.packages.urllib3.exceptions import InsecureRequestWarning
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
         for k, v in self.cfg.items():
             cfg['cli'][k] = v
