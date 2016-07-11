@@ -9,30 +9,30 @@ ns1cli is a both a command line program and REPL for accessing NS1, the Data Dri
 
 ```
 $ ns1 -h
-Usage: ns1 help [OPTIONS] COMMAND [ARGS]...
+Usage: ns1 [OPTIONS] COMMAND [ARGS]...
 
   If no command is specified, the NS1 console is opened to accept
   interactive commands.
 
 Options:
-  -c, --config_path PATH        Use the specified config file
-  -k, --key TEXT                Use the specified API Key
-  -e, --endpoint TEXT           Use the specified server endpoint
-  --transport [basic|requests]  Client transport
   --ignore-ssl-errors           Ignore SSL certificate errors
+  --transport [basic|requests]  Client transport
+  -e, --endpoint TEXT           Use the specified server endpoint
+  --key_id TEXT                 Use the specified API Key ID
+  -k, --key TEXT                Use the specified API Key
+  -c, --config_path PATH        Use the specified config file
   -h, --help                    Show this message and exit.
 
 Commands:
   config   view and modify local configuration settings
   data     view and modify data sources/feeds
-  help     displays help for a sequence of commands
   monitor  view monitoring jobs
   record   view and modify records in a zone
   stats    view usage/qps on zones and records
   zone     view and modify zone SOA data
 ```
 
-See `ns1 help <command>` for more information on a specific command.
+See `ns1 <command> --help` for more information on a specific command.
 
 ## REPL
 
@@ -66,7 +66,7 @@ Configuration
 
 __ns1cli uses the [NS1 python client](https://github.com/ns1/nsone-python) to communicate with the [NS1 API](https://ns1.com/api/).__
 
-ns1cli will by default attempt to load a configuration file from `$HOME/.nsone`.
+ns1cli will by default attempt to load a configuration file from `$HOME/.ns1/config`.
 
  - The configuration object used comes from the underlying NS1 python client.
 
