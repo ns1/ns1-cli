@@ -171,7 +171,7 @@ def feed(ctx):
 def list(ctx, sourceid, include):
     """Lists all data feeds connected to a source with SOURCEID.
     Includes config details for each feed which match the
-    feed_config specification from /data/sourcetypes, and also
+    feed_config specification from /data/sourcetypes, and optionally
     includes a list of metadata tables that are destinations
     for each feed.
 
@@ -179,7 +179,7 @@ def list(ctx, sourceid, include):
     EXAMPLES:
         ns1 feed list SOURCEID
         ns1 feed list --include id SOURCEID
-        ns1 feed list --include id --include sourcetype SOURCEID
+        ns1 feed list --include id --include destinations SOURCEID
     """
     try:
         flist = ctx.obj.datafeed_api.list(sourceid)
@@ -192,9 +192,12 @@ def list(ctx, sourceid, include):
         if 'id' in include:
             ctx.obj.formatter.out('  id: ' + f['id'])
         if 'destinations' in include:
-            ctx.obj.formatter.out('  destinations:')
-            for d in f['destinations']:
-                ctx.obj.formatter.pretty_print(d, 4)
+            if not f['destinations']:
+                click.secho('  destinations: {}')
+            else:
+                ctx.obj.formatter.out('  destinations:')
+                for d in f['destinations']:
+                    ctx.obj.formatter.pretty_print(d, 4)
         ctx.obj.formatter.out('')
 
 
@@ -247,4 +250,3 @@ def create(ctx, sourceid, name, config):
         raise click.ClickException('REST API: %s' % e.message)
 
     ctx.obj.formatter.print_feed(fdata)
-
