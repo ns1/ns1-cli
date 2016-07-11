@@ -46,7 +46,9 @@ class State(object):
 
     DEFAULT_CONFIG = {'debug': False,
                       'output_format': 'text',
-                      'verbosity': 0}
+                      'verbosity': 0,
+                      'write_lock': False,
+                      'force': False}
 
     def __init__(self):
         self.home_dir = click.get_app_dir(self.APP_NAME, force_posix=True)
@@ -88,7 +90,9 @@ class State(object):
 
     def check_write_lock(self):
         """Raises exception if ns1 rest client config `write_lock` is true."""
-        if self.config.get('write_lock', False):
+        if self.cfg['force']:
+            return
+        if self.cfg['write_lock']:
             raise click.BadOptionUsage('CLI is currently write locked.')
 
     def load_rest_client(self):
@@ -173,7 +177,7 @@ def common_options(f):
 def force_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.rest_cfg_opts['force'] = value
+        state.cfg['force'] = value
         return value
     return click.option('-f/--force',
                         expose_value=False,

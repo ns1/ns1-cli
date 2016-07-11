@@ -116,8 +116,7 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
 
 
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     options = {}
     if nx_ttl:
@@ -161,8 +160,7 @@ def set(ctx, nx_ttl, expiry, retry, refresh, zone):
         zone set --nt_ttl 200 --retry 5 test.com
         zone set -f --expiry 100 test.com
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     options = {}
     if nx_ttl:
@@ -200,8 +198,7 @@ def delete(ctx, zone):
         zone delete test.com
         zone delete -f test.com
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     try:
         ctx.obj.zone_api.delete(zone)

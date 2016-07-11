@@ -188,8 +188,7 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
           ... MX --mx_priority 10 1.1.1.1 --mx_priority 20 2.2.2.2
 
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     options = {}
     if ttl:
@@ -212,7 +211,7 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
         answers = six.itertools.izip(mx_priority, answers)
     elif mx_priority:
         raise click.BadOptionUsage('MX_priority is only allwed for MX records')
-
+    import ipdb; ipdb.set_trace()
     options['answers'] = answers
 
     try:
@@ -245,8 +244,7 @@ def delete(ctx):
         If you want to delete individual answers, see:
             ns1 record answer remove
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     try:
         ctx.obj.record_api.delete(ctx.obj.ZONE, ctx.obj.DOMAIN, ctx.obj.TYPE)
@@ -278,8 +276,7 @@ def meta_set(ctx, metaval, metakey):
     EXAMPLES:
          ns1 record meta set test.com geo A up false
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # record, so we have to retrieve it, alter it, and send it back
@@ -307,8 +304,7 @@ def meta_remove(ctx, metakey):
     EXAMPLES:
          ns1 record meta remove test.com geo A up
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # answer, so we have to retrieve it, alter it, and send it back
@@ -352,8 +348,7 @@ def add(ctx, mx_priority, answer):
     EXAMPLES:
          ns1 record answer add geo.test geocname.geo.test CNAME 1.1.1.1
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     answer = [answer]
 
@@ -424,8 +419,7 @@ def answer_meta_set(ctx, metaval, metakey, answer):
          ns1 record answer meta-set test.com geo A 6.7.8.9 georegion US-EAST
          ns1 record answer meta-set test.com geo A 3.3.3.3 georegion US-CENTRAL
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # answer, so we have to retrieve it, alter it, and send it back
@@ -465,8 +459,7 @@ def answer_meta_remove(ctx, metakey, answer):
     EXAMPLES:
          ns1 record answer meta-remove test.com geo A 1.2.3.4 georegion
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # answer, so we have to retrieve it, alter it, and send it back
@@ -530,8 +523,7 @@ def add(ctx, region):
     EXAMPLES:
          ns1 record region add geo.test geocname.geo.test CNAME us-west
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # answer, so we have to retrieve it, alter it, and send it back
@@ -563,8 +555,7 @@ def remove(ctx, region):
     EXAMPLES:
          ns1 record region remove geo.test geocname.geo.test CNAME us-west
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # answer, so we have to retrieve it, alter it, and send it back
@@ -602,8 +593,7 @@ def region_meta_set(ctx, metaval, metakey, region):
     EXAMPLES:
          ns1 record region meta-set test.com geo A us-west up false
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # answer, so we have to retrieve it, alter it, and send it back
@@ -642,8 +632,7 @@ def region_meta_remove(ctx, metakey, region):
     EXAMPLES:
          ns1 record region meta-remove test.com geo A us-west up
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     # there is no rest api call to set meta without setting the entire
     # answer, so we have to retrieve it, alter it, and send it back

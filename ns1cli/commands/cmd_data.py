@@ -147,8 +147,7 @@ def delete(ctx, sourceid):
         ns1 source delete 1234
         ns1 source delete -f 1234
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     try:
         ctx.obj.datasource_api.delete(sourceid)
@@ -238,8 +237,7 @@ def create(ctx, sourceid, name, config):
         ns1 source create 1234 new_data_feed --config label answer1
 
     """
-    if not ctx.obj.force:
-        ctx.obj.check_write_lock()
+    ctx.obj.check_write_lock()
 
     cfg = {key: val for key, val in config}
 
