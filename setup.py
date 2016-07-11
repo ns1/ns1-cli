@@ -21,7 +21,7 @@ setup(
     },
     install_requires=[
         'click==6.6',
-        'nsone==0.9.3',
+        'nsone>=0.9.4',
         'requests',
         'six'
     ],
