@@ -93,6 +93,11 @@ def qps(ctx, type, domain, zone):
         kwargs['type'] = type
 
     qps = ctx.obj.stats_api.qps(**kwargs)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(qps)
+        return
+
     ctx.obj.formatter.print_qps(kwargs, qps)
 
 

@@ -1,3 +1,5 @@
+import json
+
 from click import echo, style, secho
 
 
@@ -7,6 +9,9 @@ class Formatter(object):
 
     def out(self, msg):
         echo(msg)
+
+    def out_json(self, data):
+        echo(json.dumps(data))
 
     def pretty_print(self, d, indent=0):
         import collections

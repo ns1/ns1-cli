@@ -281,6 +281,7 @@ def ns1_client_options(f):
 
 @click.group(cls=NS1Cli, invoke_without_command=True,
              context_settings=CONTEXT_SETTINGS)
+@common_options
 @ns1_client_options
 @pass_state
 @click.pass_context

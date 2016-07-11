@@ -108,6 +108,11 @@ def info(ctx):
                                             ctx.obj.TYPE)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -211,7 +216,7 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
         answers = six.itertools.izip(mx_priority, answers)
     elif mx_priority:
         raise click.BadOptionUsage('MX_priority is only allwed for MX records')
-    import ipdb; ipdb.set_trace()
+
     options['answers'] = answers
 
     try:
@@ -220,6 +225,10 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
                                           ctx.obj.TYPE, **options)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
 
     ctx.obj.formatter.print_record(rdata)
 
@@ -286,8 +295,16 @@ def meta_set(ctx, metaval, metakey):
 
     current['meta'][metakey] = metaval
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, meta=current['meta'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, meta=current['meta'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -306,11 +323,14 @@ def meta_remove(ctx, metakey):
     """
     ctx.obj.check_write_lock()
 
-    # there is no rest api call to set meta without setting the entire
-    # answer, so we have to retrieve it, alter it, and send it back
-    current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
-                                          ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE)
+    try:
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
+                                              ctx.obj.DOMAIN,
+                                              ctx.obj.TYPE)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     try:
         del current['meta'][metakey]
@@ -318,8 +338,16 @@ def meta_remove(ctx, metakey):
         raise click.BadParameter(
             'record is missing metadata key %s' % metakey)
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, meta=current['meta'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, meta=current['meta'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -356,10 +384,19 @@ def add(ctx, mx_priority, answer):
         if not mx_priority:
             raise click.BadArgumentUsage('MX answer must have a priority')
         answer.append(mx_priority)
-    record = ctx.obj.rest.loadRecord(ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE,
-                                      zone=ctx.obj.ZONE)
-    record = record.addAnswers(answer)
+
+    try:
+        record = ctx.obj.rest.loadRecord(ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE,
+                                          zone=ctx.obj.ZONE)
+        record = record.addAnswers(answer)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(record.data)
+        return
+
     ctx.obj.formatter.print_record(record.data)
 
 
@@ -421,11 +458,14 @@ def answer_meta_set(ctx, metaval, metakey, answer):
     """
     ctx.obj.check_write_lock()
 
-    # there is no rest api call to set meta without setting the entire
-    # answer, so we have to retrieve it, alter it, and send it back
-    current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
-                                          ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE)
+    try:
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
+                                              ctx.obj.DOMAIN,
+                                              ctx.obj.TYPE)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     found = False
     for a in current['answers']:
@@ -441,8 +481,16 @@ def answer_meta_set(ctx, metaval, metakey, answer):
         raise click.BadParameter(
             '%s is not a current answer for this record' % answer)
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, answers=current['answers'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, answers=current['answers'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -461,11 +509,14 @@ def answer_meta_remove(ctx, metakey, answer):
     """
     ctx.obj.check_write_lock()
 
-    # there is no rest api call to set meta without setting the entire
-    # answer, so we have to retrieve it, alter it, and send it back
-    current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
-                                          ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE)
+    try:
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
+                                              ctx.obj.DOMAIN,
+                                              ctx.obj.TYPE)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     for a in current['answers']:
         if a['answer'][0] == answer:
@@ -480,8 +531,16 @@ def answer_meta_remove(ctx, metakey, answer):
                 raise click.BadParameter(
                     '%s missing metadata key %s' % (answer, metakey))
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, answers=current['answers'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, answers=current['answers'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -525,11 +584,14 @@ def add(ctx, region):
     """
     ctx.obj.check_write_lock()
 
-    # there is no rest api call to set meta without setting the entire
-    # answer, so we have to retrieve it, alter it, and send it back
-    current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
-                                          ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE)
+    try:
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
+                                              ctx.obj.DOMAIN,
+                                              ctx.obj.TYPE)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     for reg in current['regions'].keys():
         if reg == region:
@@ -538,8 +600,16 @@ def add(ctx, region):
 
     current['regions'][region] = {'meta': {}}
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, regions=current['regions'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, regions=current['regions'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -557,11 +627,14 @@ def remove(ctx, region):
     """
     ctx.obj.check_write_lock()
 
-    # there is no rest api call to set meta without setting the entire
-    # answer, so we have to retrieve it, alter it, and send it back
-    current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
-                                          ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE)
+    try:
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
+                                              ctx.obj.DOMAIN,
+                                              ctx.obj.TYPE)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     found = False
     for reg in current['regions'].keys():
@@ -573,8 +646,16 @@ def remove(ctx, region):
         raise click.BadParameter(
             '%s is not a current region for this record' % region)
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, regions=current['regions'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, regions=current['regions'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -595,11 +676,14 @@ def region_meta_set(ctx, metaval, metakey, region):
     """
     ctx.obj.check_write_lock()
 
-    # there is no rest api call to set meta without setting the entire
-    # answer, so we have to retrieve it, alter it, and send it back
-    current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
-                                          ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE)
+    try:
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
+                                              ctx.obj.DOMAIN,
+                                              ctx.obj.TYPE)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     found = False
     for reg in current['regions'].keys():
@@ -613,8 +697,16 @@ def region_meta_set(ctx, metaval, metakey, region):
         raise click.BadParameter(
             '%s is not a current region for this record' % region)
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, regions=current['regions'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, regions=current['regions'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)
 
 
@@ -634,11 +726,14 @@ def region_meta_remove(ctx, metakey, region):
     """
     ctx.obj.check_write_lock()
 
-    # there is no rest api call to set meta without setting the entire
-    # answer, so we have to retrieve it, alter it, and send it back
-    current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
-                                          ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE)
+    try:
+        # there is no rest api call to set meta without setting the entire
+        # answer, so we have to retrieve it, alter it, and send it back
+        current = ctx.obj.record_api.retrieve(ctx.obj.ZONE,
+                                              ctx.obj.DOMAIN,
+                                              ctx.obj.TYPE)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     if not current['regions'].get(region, None):
         raise click.BadParameter(
@@ -652,6 +747,14 @@ def region_meta_remove(ctx, metakey, region):
         raise click.BadParameter(
             'region %s has no metakey %s' % (region, metakey))
 
-    rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
-                                      ctx.obj.TYPE, regions=current['regions'])
+    try:
+        rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
+                                          ctx.obj.TYPE, regions=current['regions'])
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(rdata)
+        return
+
     ctx.obj.formatter.print_record(rdata)

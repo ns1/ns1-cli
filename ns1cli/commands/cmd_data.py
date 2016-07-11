@@ -8,7 +8,6 @@ class DataFormatter(Formatter):
 
     def print_source(self, sdata):
         feeds = sdata.pop('feeds')
-
         self.pretty_print(sdata)
         if feeds:
             click.secho('FEEDS:', bold=True)
@@ -59,6 +58,10 @@ def list(ctx, include):
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
 
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(slist)
+        return
+
     click.secho('DATASOURCES:', bold=True)
     for s in slist:
         ctx.obj.formatter.out('  name: ' + s['name'])
@@ -85,6 +88,10 @@ def info(ctx, sourceid):
         sdata = ctx.obj.datasource_api.retrieve(sourceid)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(sdata)
+        return
 
     ctx.obj.formatter.print_source(sdata)
 
@@ -128,6 +135,10 @@ def create(ctx, name, sourcetype, config):
         sdata = ctx.obj.datasource_api.create(name, sourcetype, **options)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(sdata)
+        return
 
     ctx.obj.formatter.print_source(sdata)
 
@@ -186,6 +197,10 @@ def list(ctx, sourceid, include):
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
 
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(flist)
+        return
+
     click.secho('DATAFEEDS:', bold=True)
     for f in flist:
         ctx.obj.formatter.out('  name: ' + f['name'])
@@ -219,6 +234,10 @@ def info(ctx, sourceid, feedid):
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
 
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(fdata)
+        return
+
     ctx.obj.formatter.print_feed(fdata)
 
 
@@ -248,5 +267,9 @@ def create(ctx, sourceid, name, config):
         fdata = ctx.obj.datafeed_api.create(sourceid, name, cfg)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(fdata)
+        return
 
     ctx.obj.formatter.print_feed(fdata)

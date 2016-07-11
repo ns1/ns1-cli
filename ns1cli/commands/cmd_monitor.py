@@ -56,6 +56,10 @@ def list(ctx, include):
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
 
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(mlist)
+        return
+
     click.secho('MONITORS:', bold=True)
     for m in mlist:
         ctx.obj.formatter.out('  name: ' + m['name'])
@@ -84,5 +88,9 @@ def info(ctx, jobid):
         mdata = ctx.obj.monitor_api.retrieve(jobid)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(mdata)
+        return
 
     ctx.obj.formatter.print_monitor(mdata)

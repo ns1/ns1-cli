@@ -47,6 +47,10 @@ def list(ctx):
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
 
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(zlist)
+        return
+
     click.secho('ZONES:', bold=True)
     for z in zlist:
         ctx.obj.formatter.out('  ' + z['zone'])
@@ -68,6 +72,10 @@ def info(ctx, zone):
         zdata = ctx.obj.zone_api.retrieve(zone)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(zdata)
+        return
 
     ctx.obj.formatter.print_zone(zdata)
 
@@ -138,6 +146,10 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
 
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(zdata)
+        return
+
     ctx.obj.formatter.print_zone(zdata)
 
 
@@ -179,6 +191,10 @@ def set(ctx, nx_ttl, expiry, retry, refresh, zone):
         zdata = ctx.obj.zone_api.update(zone, **options)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(zdata)
+        return
 
     ctx.obj.formatter.print_zone(zdata)
 

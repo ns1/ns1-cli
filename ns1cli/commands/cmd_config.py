@@ -36,6 +36,10 @@ def show(ctx):
     EXAMPLES:
         ns1 config show
     """
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(ctx.obj.rest.config._data)
+        return
+
     ctx.obj.formatter.print_config(ctx.obj.rest.config)
 
 
@@ -52,6 +56,11 @@ def set(ctx, value, key):
         ns1 config set output_format json
     """
     ctx.obj.set_config(key, value)
+
+    if ctx.obj.formatter.output_format == 'json':
+        ctx.obj.formatter.out_json(ctx.obj.rest.config._data)
+        return
+
     ctx.obj.formatter.print_config(ctx.obj.rest.config)
 
 
@@ -67,6 +76,11 @@ def key(ctx, keyid):
     """
     try:
         ctx.obj.rest.config.useKeyID(keyid)
+
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(ctx.obj.rest.config._data)
+            return
+
         click.secho('Using Key: %s' % keyid, bold=True)
         click.secho('Endpoint: %s' % ctx.obj.rest.config.getEndpoint(), bold=True)
     except ConfigException as e:
@@ -90,6 +104,11 @@ def key(ctx, path):
 
     try:
         ctx.obj.rest.config.write(path)
+
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(ctx.obj.rest.config._data)
+            return
+
         click.secho('Saved config at {}'.format(path), bold=True)
     except ConfigException as e:
         raise click.ClickException(e.message)
