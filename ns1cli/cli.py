@@ -6,71 +6,118 @@ import click
 from nsone import NSONE
 from nsone.config import Config, ConfigException
 
-from ns1cli.repl import NS1Repl
+from ns1cli.repl import NS1Repl, BANNER
 
-APP_NAME = 'NS1 CLI'
-VERSION = '0.1'
-BANNER = 'ns1 CLI version %s' % VERSION
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
+cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                          'commands'))
+
+
+class NS1Cli(click.MultiCommand):
+
+    def list_commands(self, ctx):
+        rv = []
+        for filename in os.listdir(cmd_folder):
+            if filename.endswith('.py') and \
+                    filename.startswith('cmd_'):
+                rv.append(filename[4:-3])
+        rv.sort()
+        return rv
+
+    def get_command(self, ctx, name):
+        try:
+            if sys.version_info[0] == 2:
+                name = name.encode('ascii', 'replace')
+            mod = __import__('ns1cli.commands.cmd_' + name,
+                             None, None, ['cli'])
+        except ImportError:
+            return
+        return mod.cli
+
+
 class State(object):
 
-    CLI_CONFIG_KEYS = ('output_format', 'write_lock')
+    APP_NAME = 'NS1CLI'
+
+    DEFAULT_CONFIG_FILE = '.ns1'
+
+    DEFAULT_CONFIG = {'debug': False,
+                      'output_format': 'text',
+                      'verbosity': 0}
 
     def __init__(self):
-        self.verbosity = 0
-        self.debug = False
-        self.output_format = 'text'
+        # Config vars are saved/accessed through rest client.
+        # self.rest.config['cli']
+        self.rest = None
+        self.cfg = self.DEFAULT_CONFIG
+        self.rest_cfg_opts = {}
+
+    def log(self, msg, *args):
+        """Logs a message to stderr."""
+        if args:
+            msg %= args
+        click.echo(msg, file=sys.stderr)
+
+    def vlog(self, msg, *args):
+        """Logs a message to stderr only if verbose is enabled."""
+        if self.cfg['verbosity'] > 0:
+            self.log(msg, *args)
 
     def get_config(self, key):
-        if key in self.CLI_CONFIG_KEYS:
-            return self.nsone.config['cli'][key]
+        if key in self.cfg:
+            return self.cfg[key]
         else:
-            return self.nsone.config[key]
+            try:
+                return self.rest.config[key]
+            except ConfigException:
+                raise click.ClickException('Unknown config key {0}'.format(key))
 
     def set_config(self, key, value):
-        if key in self.CLI_CONFIG_KEYS:
-            self.nsone.config['cli'][key] = value
+        if key in self.cfg:
+            self.cfg[key] = value
+            self.rest.config['cli'][key] = value
         else:
-            self.nsone.config[key] = value
+            self.rest.config[key] = value
 
     def check_write_lock(self):
-        if self.nsone.config['cli'].get('write_lock', False):
+        """Raises exception if ns1 rest client config `write_lock` is true."""
+        if self.config.get('write_lock', False):
             raise click.BadOptionUsage('CLI is currently write locked.')
 
-    def load_nsone_client(self, **kwargs):
+    def load_rest_client(self):
+        """Loads ns1 rest client config"""
+        opts = self.rest_cfg_opts
+
+        # Create default config without any key
         cfg = Config()
+        cfg.createFromAPIKey('')
 
-        if kwargs['config_path']:
-            # cfg_file = os.path.join(click.get_app_dir(APP_NAME), 'config.ini')
-            cfg.loadFromFile(kwargs['config_path'])
-        elif kwargs['key']:
-            # this will save a .nsone with this key if one doesn't already exist
-            cfg.createFromAPIKey(kwargs['key'], maybeWriteDefault=True)
+        if opts.get('path', None):
+            cfg.loadFromFile(opts['path'])
+        elif opts.get('api_key'):
+            cfg.createFromAPIKey(opts['api_key'])
         else:
-            cfg.loadFromFile(Config.DEFAULT_CONFIG_FILE)
+            path = os.path.join(click.get_app_dir(self.APP_NAME),
+                                self.DEFAULT_CONFIG_FILE)
+            if os.path.exists(path):
+                cfg.loadFromFile('~/.nope')
 
-        cfg['endpoint'] = kwargs['endpoint']
-        cfg['transport'] = kwargs['transport']
-        cfg['ignore-ssl-errors'] = kwargs['ignore_ssl']
-
-        if cfg['ignore-ssl-errors']:
-            if self.verbosity < 2:
+        if opts.get('api_key_id'):
+            cfg.useKeyId(opts['api_key_id'])
+        if opts.get('endpoint'):
+            cfg['endpoint'] = opts['endpoint']
+        if opts.get('transport'):
+            cfg['transport'] = opts['transport']
+        if opts.get('ignore_ssl'):
+            cfg['ignore-ssl-errors'] = opts['ignore_ssl']
+            if self.cfg['verbosity'] < 2:
                 logging.captureWarnings(True)
 
-        try:
-            self.nsone = NSONE(config=cfg)
-        except ConfigException as e:
-            print(e.message)
-            sys.exit(1)
-        except IOError:
-            print('No config file was found. Either specify an API key (with -k) '
-                  'on the command line, or create %s' % Config.DEFAULT_CONFIG_FILE)
-            sys.exit(1)
+        self.rest = NSONE(config=cfg)
 
-        self.set_config('output_format', self.output_format)
 
 pass_state = click.make_pass_decorator(State, ensure=True)
 
@@ -78,7 +125,7 @@ pass_state = click.make_pass_decorator(State, ensure=True)
 def verbosity_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.verbosity = value
+        state.cfg['verbosity'] = value
         return value
     return click.option('-v', '--verbose', count=True,
                         expose_value=False,
@@ -89,7 +136,7 @@ def verbosity_option(f):
 def debug_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.debug = value
+        state.cfg['debug'] = value
         return value
     return click.option('--debug/--no-debug',
                         expose_value=False,
@@ -100,7 +147,7 @@ def debug_option(f):
 def output_format_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.output_format = value
+        state.cfg['output_format'] = value
         return value
     return click.option('-o', '--output_format',
                         type=click.Choice(['text', 'json']),
@@ -120,7 +167,7 @@ def common_options(f):
 def force_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.force = value
+        state.rest_cfg_opts['force'] = value
         return value
     return click.option('-f/--force',
                         expose_value=False,
@@ -134,53 +181,103 @@ def write_options(f):
     return f
 
 
-cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                          'commands'))
+def config_path_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.rest_cfg_opts['path'] = value
+        # state.cfg = Config().loadFromFile(value)
+        return value
+    return click.option('-c', '--config_path',
+                        expose_value=False,
+                        help='Use the specified config file',
+                        type=click.Path(exists=True),
+                        callback=callback)(f)
 
 
-class NS1Cli(click.MultiCommand):
+def api_key_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.rest_cfg_opts['api_key'] = value
+        return value
+    return click.option('-k', '--key',
+                        expose_value=False,
+                        help='Use the specified API Key',
+                        callback=callback)(f)
 
-    def list_commands(self, ctx):
-        rv = []
-        for filename in os.listdir(cmd_folder):
-            if filename.endswith('.py') and \
-               filename.startswith('cmd_'):
-                rv.append(filename[4:-3])
-        rv.sort()
-        return rv
 
-    def get_command(self, ctx, name):
-        try:
-            if sys.version_info[0] == 2:
-                name = name.encode('ascii', 'replace')
-            mod = __import__('ns1cli.commands.cmd_' + name,
-                             None, None, ['cli'])
-        except ImportError:
-            return
-        return mod.cli
+def api_key_id_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.rest_cfg_opts['api_key_id'] = value
+        return value
+    return click.option('--key_id',
+                        expose_value=False,
+                        help='Use the specified API Key ID',
+                        callback=callback)(f)
+
+
+def endpoint_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.rest_cfg_opts['endpoint'] = value
+        return value
+    return click.option('-e', '--endpoint',
+                        expose_value=False,
+                        help='Use the specified server endpoint',
+                        callback=callback)(f)
+
+
+def transport_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.rest_cfg_opts['transport'] = value
+        return value
+    return click.option('--transport',
+                        expose_value=False,
+                        help='Client transport',
+                        default='requests',
+                        type=click.Choice(['basic', 'requests']),
+                        callback=callback)(f)
+
+
+def ignore_ssl_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+        state.rest_cfg_opts['ignore_ssl'] = value
+        return value
+    return click.option('--ignore-ssl-errors',
+                        expose_value=False,
+                        help='Ignore SSL certificate errors',
+                        is_flag=True,
+                        default=False,
+                        callback=callback)(f)
+
+
+def ns1_client_options(f):
+    f = config_path_option(f)
+    f = api_key_option(f)
+    f = api_key_id_option(f)
+    f = endpoint_option(f)
+    f = transport_option(f)
+    f = ignore_ssl_option(f)
+    return f
 
 
 @click.group(cls=NS1Cli, invoke_without_command=True,
              context_settings=CONTEXT_SETTINGS)
-@click.option('-c', '--config_path', help='Use the specified config file',
-              type=click.Path(exists=True))
-@click.option('-k', '--key', help='Use the specified API Key')
-@click.option('-e', '--endpoint', help='Use the specified server endpoint')
-@click.option('--transport', help='Client transport', default='requests',
-              type=click.Choice(['basic', 'requests']))
-@click.option('--ignore-ssl-errors', help='Ignore SSL certificate errors',
-              default=False, is_flag=True)
+@ns1_client_options
 @pass_state
 @click.pass_context
-def cli(ctx, state, ignore_ssl_errors, transport, endpoint, key, config_path):
+def cli(ctx, state):
     """
+
     If no command is specified, the NS1 console is opened to accept interactive
     commands."""
-    state.load_nsone_client(config_path=config_path,
-                            key=key,
-                            endpoint=endpoint,
-                            transport=transport,
-                            ignore_ssl=ignore_ssl_errors)
+    if state.rest_cfg_opts:
+        try:
+            state.load_rest_client()
+        except ConfigException as e:
+            raise click.ClickException(e.message)
 
     ctx.obj = state
 
@@ -188,3 +285,4 @@ def cli(ctx, state, ignore_ssl_errors, transport, endpoint, key, config_path):
         repl = NS1Repl(ctx, cli)
         repl.interact(BANNER)
         sys.exit(0)
+

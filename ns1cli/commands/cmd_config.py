@@ -1,4 +1,6 @@
 import click
+
+from nsone.config import ConfigException
 from ns1cli.cli import cli
 from ns1cli.util import Formatter
 
@@ -6,8 +8,12 @@ from ns1cli.util import Formatter
 class ConfigFormatter(Formatter):
 
     def print_config(self, config):
-        click.secho('Current Key: %s' % config.getCurrentKeyID(), bold=True)
-        self.pretty_print(config.getKeyConfig())
+        try:
+            click.secho('Current Key: %s' % config.getCurrentKeyID(), bold=True)
+            self.pretty_print(config.getKeyConfig())
+        except ConfigException as e:
+            pass
+
         self.out(config)
 
 
@@ -28,7 +34,7 @@ def show(ctx):
     EXAMPLES:
         ns1 config show
     """
-    ctx.obj.formatter.print_config(ctx.obj.nsone.config)
+    ctx.obj.formatter.print_config(ctx.obj.rest.config)
 
 
 @cli.command('set', short_help='set the configuration key-value')
@@ -44,7 +50,7 @@ def set(ctx, value, key):
         ns1 config set output_format json
     """
     ctx.obj.set_config(key, value)
-    ctx.obj.formatter.print_config(ctx.obj.nsone.config)
+    ctx.obj.formatter.print_config(ctx.obj.rest.config)
 
 
 @cli.command('key', short_help='set the active configuration key ID')
@@ -57,6 +63,9 @@ def key(ctx, keyid):
     EXAMPLES:
         ns1 config key default
     """
-    ctx.obj.nsone.config.useKeyID(keyid)
-    click.secho('Using Key: %s' % keyid, bold=True)
-    click.secho('Endpoint: %s' % ctx.obj.nsone.config.getEndpoint(), bold=True)
+    try:
+        ctx.obj.rest.config.useKeyID(keyid)
+        click.secho('Using Key: %s' % keyid, bold=True)
+        click.secho('Endpoint: %s' % ctx.obj.rest.config.getEndpoint(), bold=True)
+    except ConfigException as e:
+        raise click.ClickException(e.message)

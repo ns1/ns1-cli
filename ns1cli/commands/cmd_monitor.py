@@ -7,14 +7,12 @@ from nsone.rest.resource import ResourceException
 class MonitorFormatter(Formatter):
 
     def print_monitor(self, mdata):
-        regions = mdata['regions']
-        status = mdata['status']
-        rules = mdata['rules']
-        del mdata['regions']
-        del mdata['status']
-        del mdata['rules']
+        regions = mdata.pop('regions')
+        status = mdata.pop('status')
+        rules = mdata.pop('rules')
 
         self.pretty_print(mdata)
+
         click.secho('REGIONS:', bold=True)
         for r in regions:
             self.out('    ' + r)
@@ -30,17 +28,9 @@ class MonitorFormatter(Formatter):
              short_help='view monitoring jobs')
 @click.pass_context
 def cli(ctx):
-    """View monitoring jobs.
-
-    \b
-    In addition to our API and native integrations, we offer monitoring jobs
-    run over ICMP or TCP from up to five locations across the globe. Our built
-    in monitoring capabilities provide a quick and easy way to detect a down server
-    and, because its fully integrated with out Filter Chain technology, the ability
-    to reroute traffic based upon real time infrastructure telemetry.
-    """
+    """View monitoring jobs."""
     ctx.obj.formatter = MonitorFormatter(ctx.obj.get_config('output_format'))
-    ctx.obj.monitor_api = ctx.obj.nsone.monitors()
+    ctx.obj.monitor_api = ctx.obj.rest.monitors()
 
 
 @cli.command('list', short_help='list all active monitors')

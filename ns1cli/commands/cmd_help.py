@@ -1,8 +1,6 @@
-import six
-from collections import defaultdict
-
 import click
 
+from nsone.config import ConfigException
 from ns1cli import __version__
 from ns1cli.cli import cli as root_cli
 from ns1cli.util import Formatter
@@ -11,9 +9,20 @@ from ns1cli.util import Formatter
 class HelpFormatter(Formatter):
 
     def print_config(self, config):
-        click.secho('Current Key: %s' % config.getCurrentKeyID(), bold=True)
-        self.pretty_print(config.getKeyConfig())
+        try:
+            click.secho('Current Key: %s' % config.getCurrentKeyID(), bold=True)
+            self.pretty_print(config.getKeyConfig())
+        except ConfigException as e:
+            pass
+
         self.out(config)
+
+
+def solve(s):
+    s = s.split('\n', 1)[-1]
+    if s.find('\n') == -1:
+        return s
+    return s.rsplit('\n', 1)[0]
 
 
 @click.command('help',
@@ -38,23 +47,11 @@ def cli(ctx, subcommands):
         raise click.BadParameter('Unknown command sequence')
 
     help_text = cmd.get_help(ctx)
+    temp = solve(help_text)
 
     formatter = ctx.make_formatter()
     formatter.write_heading('NS1Cli v%s' % __version__)
     formatter.indent()
-    with formatter.section('External Commands'):
-        formatter.write_text('prefix external commands with "!"')
-    with formatter.section('Internal Commands'):
-        formatter.write_text('prefix internal commands with ":"')
-        info_table = defaultdict(list)
-        formatter.write(help_text)
-        # for mnemonic, target_info in six.iteritems(root_cli.get_commands(ctx)):
-        #     info_table[target_info[1]].append(mnemonic)
-        # formatter.write_dl(
-        #     (', '.join((':{0}'.format(mnemonic)
-        #                 for mnemonic in sorted(mnemonics))), description)
-        #     for description, mnemonics in six.iteritems(info_table)
-        # )
-    # return formatter.getvalue()
+    formatter.write(help_text)
     help_text = formatter.getvalue()
     click.echo_via_pager(help_text)

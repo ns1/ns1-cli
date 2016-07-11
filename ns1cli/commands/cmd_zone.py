@@ -8,6 +8,7 @@ class ZoneFormatter(Formatter):
 
     def print_zone(self, zdata):
         records = zdata.pop('records')
+
         self.pretty_print(zdata)
 
         if len(records) == 0:
@@ -28,10 +29,10 @@ class ZoneFormatter(Formatter):
 def cli(ctx):
     """Create, retrieve, update, and delete zone SOA data"""
     ctx.obj.formatter = ZoneFormatter(ctx.obj.get_config('output_format'))
-    ctx.obj.zone_api = ctx.obj.nsone.zones()
+    ctx.obj.zone_api = ctx.obj.rest.zones()
 
 
-@cli.command('list', short_help='List all active zones')
+@cli.command('list', short_help='list all active zones')
 @click.pass_context
 def list(ctx):
     """Returns all active zones and basic zone configuration details
@@ -51,8 +52,7 @@ def list(ctx):
         ctx.obj.formatter.out('  ' + z['zone'])
 
 
-@cli.command('info', short_help='Get zone details',
-             options_metavar='[options]')
+@cli.command('info', short_help='get zone details')
 @click.argument('zone')
 @click.pass_context
 def info(ctx, zone):
@@ -72,8 +72,7 @@ def info(ctx, zone):
     ctx.obj.formatter.print_zone(zdata)
 
 
-@cli.command('create', short_help='Create a new zone',
-             options_metavar='[options]')
+@cli.command('create', short_help='create a new zone')
 @click.argument('zone')
 @write_options
 @click.option('--link', help='Create linked zone pointing to given zone', type=str)
@@ -143,8 +142,7 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
     ctx.obj.formatter.print_zone(zdata)
 
 
-@cli.command('set', short_help='Delete a zone and all records it contains',
-             options_metavar='[options]')
+@cli.command('set', short_help='update zone attributes')
 @click.argument('zone')
 @write_options
 @click.option('--refresh', help='SOA Refresh', type=int)
@@ -188,8 +186,7 @@ def set(ctx, nx_ttl, expiry, retry, refresh, zone):
 
 
 @cli.command('delete',
-             short_help='Delete a zone and all records it contains',
-             options_metavar='[options]')
+             short_help='delete a zone and all records it contains')
 @click.argument('zone')
 @write_options
 @click.pass_context

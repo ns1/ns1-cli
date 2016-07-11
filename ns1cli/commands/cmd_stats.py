@@ -52,7 +52,7 @@ def record_arguments(f):
 def cli(ctx):
     """Get usage/qps on zones and records"""
     ctx.obj.formatter = StatsFormatter(ctx.obj.get_config('output_format'))
-    ctx.obj.stats_api = ctx.obj.nsone.stats()
+    ctx.obj.stats_api = ctx.obj.rest.stats()
 
 
 @cli.command('qps', short_help='retrieve real time queries per second')
@@ -103,4 +103,4 @@ def qps(ctx, type, domain, zone):
 # @click.argument('TYPE', required=False, metavar='[TYPE]]')
 # @click.pass_context
 # def usage(ctx, type, domain, zone):
-#     import ipdb; ipdb.set_trace()
+#   pass

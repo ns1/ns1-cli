@@ -9,15 +9,13 @@ from nsone.rest.resource import ResourceException
 class RecordFormatter(Formatter):
 
     def print_record(self, rdata):
-        ans = rdata['answers']
-        fil = rdata['filters']
-        reg = rdata['regions']
-        meta = rdata['meta']
-        del rdata['answers']
-        del rdata['filters']
-        del rdata['regions']
-        del rdata['meta']
+        ans = rdata.pop('answers')
+        fil = rdata.pop('filters')
+        reg = rdata.pop('regions')
+        meta = rdata.pop('meta')
+
         self.pretty_print(rdata)
+
         click.secho('ANSWERS:', bold=True)
         for a in ans:
             self.pretty_print(a, 4)
@@ -33,6 +31,7 @@ class RecordFormatter(Formatter):
         if meta:
             click.secho('META:', bold=True)
             self.pretty_print(meta, 4)
+
 
 def zone_argument(f):
     def callback(ctx, param, value):
@@ -77,9 +76,9 @@ def _has_meta(resource):
              short_help='view and modify records in a zone')
 @click.pass_context
 def cli(ctx):
-    """Create, retrieve, update, and delete records in a zone"""
+    """Create, retrieve, update, and delete records in a zone."""
     ctx.obj.formatter = RecordFormatter(ctx.obj.get_config('output_format'))
-    ctx.obj.record_api = ctx.obj.nsone.records()
+    ctx.obj.record_api = ctx.obj.rest.records()
 
 
 @cli.command('info', short_help='get record details')
@@ -88,8 +87,7 @@ def cli(ctx):
 def info(ctx):
     """Returns full configuration for a DNS record including basic config,
     answers, regions, filter chain configuration, and all metadata tables
-    and data feeds attached to entities in the record. (Note that regions
-    might be any specified grouping, not necessarily a geo-related region)
+    and data feeds attached to entities in the record.
 
     \b
     EXAMPLES:
@@ -98,8 +96,9 @@ def info(ctx):
 
     \b
     NOTES:
-        ZONE, DOMAIN, and record TYPE must be fully specified,
-        e.g. example.com www.example.com A returns the A record for www.example.com in the example.com zone.
+        ZONE, DOMAIN, and record TYPE must be fully specified:
+            e.g. example.com www.example.com A returns the A record for
+            www.example.com in the example.com zone.
 
         If no "dot" in DOMAIN, the zone is automatically appended to form a FQDN.
     """
@@ -127,7 +126,7 @@ def info(ctx):
 @click.argument('ANSWERS', required=False, nargs=-1)
 @click.pass_context
 def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
-    """Creates a new DNS record in the specified ZONE, for the specified DOMAIN,
+    """Creates a new dns record in the specified ZONE, for the specified DOMAIN,
      of the given record TYPE.
 
     \b
@@ -158,7 +157,7 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
     DATA FEEDS:
         Anywhere metadata tables can go, data feeds can go as well.
         See:
-          ns1 help data
+          ns1 help data feed
 
     \b
     LINKED RECORDS:
@@ -174,12 +173,12 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
         the FQDN containing the config it should link to. If link is specified, no other
         record configuration (such as answers or meta) should be specified.
 
-            record create --target test test.com linked A
+            record create --target source_domain_name test.com linked_domain_name A
 
     \b
     EXAMPLES:
         ns1 record create --ttl 200 test.com test A 1.1.1.1
-        ns1 record create --target test test.com linked A
+        ns1 record create --target source test.com linked A
         ns1 record create test.com test A 1.1.1.1 2.2.2.2 3.3.3.3
         ns1 record create test.com mail MX --mx_priority 10 1.1.1.1
 
@@ -232,7 +231,7 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
 @click.pass_context
 def delete(ctx):
     """Removes an existing record and all associated answers and configuration
-    details. We will no longer respond for this record once it is deleted, and
+    details. NS1 will no longer respond for this record once it is deleted, and
     it cannot be recovered, so use caution.
 
     \b
@@ -257,7 +256,7 @@ def delete(ctx):
 
 # META
 
-@cli.group('meta')
+@cli.group('meta', short_help='view and modify record meta')
 @click.pass_context
 def meta(ctx):
     """View and modify record meta data"""
@@ -330,17 +329,11 @@ def meta_remove(ctx, metakey):
 
 # ANSWERS
 
-@cli.group('answer', chain=True, invoke_without_command=True)
+@cli.group('answer', chain=True, invoke_without_command=True,
+           short_help='view and modify a records answers')
 @click.pass_context
 def answer(ctx):
     """View and modify record answer data
-
-    \b
-    An answer is the data associated with a DNS record that is the subject of a DNS query.
-    Unlike traditional DNS software, NS1 treats answers as entities on their own, with all
-    "potential" answers for a DNS record grouped under that record.  This enables us to make
-    complex decisions about which answers to return for a given record when we get a query
-    for the record.
     """
     pass
 
@@ -368,7 +361,7 @@ def add(ctx, mx_priority, answer):
         if not mx_priority:
             raise click.BadArgumentUsage('MX answer must have a priority')
         answer.append(mx_priority)
-    record = ctx.obj.nsone.loadRecord(ctx.obj.DOMAIN,
+    record = ctx.obj.rest.loadRecord(ctx.obj.DOMAIN,
                                       ctx.obj.TYPE,
                                       zone=ctx.obj.ZONE)
     record = record.addAnswers(answer)
@@ -391,7 +384,7 @@ def add(ctx, mx_priority, answer):
 #         ctx.obj.check_write_lock()
 #
 #     answer = [answer]
-#     record = ctx.obj.nsone.loadRecord(ctx.obj.DOMAIN,
+#     record = ctx.obj.rest.loadRecord(ctx.obj.DOMAIN,
 #                                       ctx.obj.TYPE,
 #                                       zone=ctx.obj.ZONE)
 #     #@TODO: NOT WORKING
@@ -516,19 +509,11 @@ def answer_meta_remove(ctx, metakey, answer):
 #     """
 #     pass
 
-@cli.group('region', chain=True, invoke_without_command=True)
+@cli.group('region', chain=True, invoke_without_command=True,
+           short_help='view and modify a records answers')
 @click.pass_context
 def region(ctx):
     """View and modify record region data
-
-    \b
-    Within a DNS record in NS1's platform, you can group answers into "regions".
-    Often these regions are geographical in nature, for example, you might lump
-    all your West coast servers into one region, and all your East coast servers
-    into a different one.
-
-    \b
-    But you can think of regions as general groupings of related servers that need not be geographical.
     """
     pass
 
@@ -544,11 +529,6 @@ def add(ctx, region):
     \b
     EXAMPLES:
          ns1 record region add geo.test geocname.geo.test CNAME us-west
-
-    \b
-    NOTES:
-         Regions can be any kind of group, not just geo-related.
-         For this reason, the NS1 web portal at my.nsone.net uses the word "group" instead of "region".
     """
     if not ctx.obj.force:
         ctx.obj.check_write_lock()
@@ -607,8 +587,8 @@ def remove(ctx, region):
     ctx.obj.formatter.print_record(rdata)
 
 
-
-@region.command('meta-set', short_help='set meta data key/value to a region')
+@region.command('meta-set',
+                short_help='set meta data key/value to a region')
 @write_options
 @record_arguments
 @click.argument('REGION')
@@ -648,7 +628,8 @@ def region_meta_set(ctx, metaval, metakey, region):
     ctx.obj.formatter.print_record(rdata)
 
 
-@region.command('meta-remove', short_help='remove meta data key from a region')
+@region.command('meta-remove',
+                short_help='remove meta data key from a region')
 @write_options
 @record_arguments
 @click.argument('REGION')
