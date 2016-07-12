@@ -81,7 +81,7 @@ def cli(ctx):
     ctx.obj.record_api = ctx.obj.rest.records()
 
 
-@cli.command('info', short_help='get record details')
+@cli.command('info', short_help='Get record details')
 @record_arguments
 @click.pass_context
 def info(ctx):
@@ -97,8 +97,8 @@ def info(ctx):
     \b
     NOTES:
         ZONE, DOMAIN, and record TYPE must be fully specified:
-            e.g. example.com www.example.com A returns the A record for
-            www.example.com in the example.com zone.
+            'record info example.com www.example.com A' returns
+            the A record for www.example.com in the example.com zone.
 
         If no "dot" in DOMAIN, the zone is automatically appended to form a FQDN.
     """
@@ -117,13 +117,13 @@ def info(ctx):
 
 
 @cli.command('create',
-             short_help='create a new record, optionally with simple answers')
+             short_help='Create a new record, optionally with simple answers')
 @click.option('--target', type=str,
-              help='create a linked record from an existing target')
+              help='Create a linked record from an existing target')
 @click.option('--ttl', type=int,
-              help='ttl (defaults to default zone ttl)')
+              help='TTL (defaults to default zone ttl)')
 @click.option('--use-client-subnet', type=bool,
-              help='set use of client-subnet EDNS option (defaults to true on new records)')
+              help='Set use of client-subnet edns option (defaults to true on new records)')
 @write_options
 @record_arguments
 @click.option('--mx_priority', type=int, required=False, multiple=True,
@@ -150,35 +150,12 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
         Multiple ANSWERs can be provided, along with RDATA fields for a DNS record of the specified TYPE.
 
     \b
-    META DATA:
-        Metadata tables (meta) may be specified in ANSWERs, in regions or in the record as a whole.
-        The metadata tables may contain key/value pairs where valid keys and values are as described in the output of /metatypes.
-        See:
-          ns1 help record meta
-          ns1 help record region meta
-          ns1 help record answer meta
-
-    \b
-    DATA FEEDS:
-        Anywhere metadata tables can go, data feeds can go as well.
-        See:
-          ns1 help data feed
-
-    \b
     LINKED RECORDS:
-        Instead of specifying answers and other details, you may create a "linked" record.
-        This allows you reuse the configuration (including answers and metadata) from an
-        existing record in NS1's systems. Linked records will respond in the exact same
-        way as their targets at DNS resolution time, and can be used for maintaining
-        complicated record configurations in a single record while pointing (linking)
-        other lightweight records to it. Linked records must point to another record of
-        the exact same record TYPE and do not have to exist in the same ZONE.
-
         To create a linked record, specify the --target as a string whose contents is
         the FQDN containing the config it should link to. If link is specified, no other
         record configuration (such as answers or meta) should be specified.
 
-            record create --target source_domain_name test.com linked_domain_name A
+        record create --target src_domain test.com linked_domain A
 
     \b
     EXAMPLES:
@@ -190,7 +167,9 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
     \b
     NOTES:
         if record type is MX, each given answer MUST have priority:
-          ... MX --mx_priority 10 1.1.1.1 --mx_priority 20 2.2.2.2
+          ns1 record create test.com mail MX --mx_priority 10 1.1.1.1 --mx_priority 20 2.2.2.2
+
+
 
     """
     ctx.obj.check_write_lock()
@@ -233,7 +212,7 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
     ctx.obj.formatter.print_record(rdata)
 
 
-@cli.command('delete', short_help='delete a record')
+@cli.command('delete', short_help='Delete a record')
 @write_options
 @record_arguments
 @click.pass_context
@@ -250,8 +229,6 @@ def delete(ctx):
     \b
     NOTES:
         This operation deletes all answers associated with the domain and record type.
-        If you want to delete individual answers, see:
-            ns1 record answer remove
     """
     ctx.obj.check_write_lock()
 
@@ -263,20 +240,20 @@ def delete(ctx):
 
 # META
 
-@cli.group('meta', short_help='view and modify record meta')
+@cli.group('meta', short_help='View and modify record meta')
 @click.pass_context
 def meta(ctx):
     """View and modify record meta data"""
     pass
 
 
-@meta.command('set', short_help='set meta data key/value for a record')
+@meta.command('set', short_help='Set meta key-value pairs for a record')
 @write_options
 @record_arguments
-@click.argument('METAKEY')
-@click.argument('METAVAL')
+@click.argument('KEY')
+@click.argument('VAL')
 @click.pass_context
-def meta_set(ctx, metaval, metakey):
+def meta_set(ctx, val, key):
     """Set meta data key/value pairs for a record. This will set the meta data
     for the entire record, which will be used for an answer if there is no
     answer meta. See ns1 list meta types
@@ -293,7 +270,7 @@ def meta_set(ctx, metaval, metakey):
                                           ctx.obj.DOMAIN,
                                           ctx.obj.TYPE)
 
-    current['meta'][metakey] = metaval
+    current['meta'][key] = val
 
     try:
         rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
@@ -308,12 +285,12 @@ def meta_set(ctx, metaval, metakey):
     ctx.obj.formatter.print_record(rdata)
 
 
-@meta.command('remove', short_help='remove meta data key from a record')
+@meta.command('remove', short_help='Remove meta data key from a record')
 @write_options
 @record_arguments
-@click.argument('METAKEY')
+@click.argument('KEY')
 @click.pass_context
-def meta_remove(ctx, metakey):
+def meta_remove(ctx, key):
     """Remove meta data key/value pairs for a record. This will remove a meta
     data key for the entire record.
 
@@ -333,10 +310,10 @@ def meta_remove(ctx, metakey):
         raise click.ClickException('REST API: %s' % e.message)
 
     try:
-        del current['meta'][metakey]
+        del current['meta'][key]
     except KeyError:
         raise click.BadParameter(
-            'record is missing metadata key %s' % metakey)
+            'record is missing metadata key %s' % key)
 
     try:
         rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
@@ -353,8 +330,8 @@ def meta_remove(ctx, metakey):
 
 # ANSWERS
 
-@cli.group('answer', chain=True, invoke_without_command=True,
-           short_help='view and modify a records answers')
+@cli.group('answer', invoke_without_command=True,
+           short_help='View and modify a records answers')
 @click.pass_context
 def answer(ctx):
     """View and modify record answer data
@@ -362,7 +339,7 @@ def answer(ctx):
     pass
 
 
-@answer.command('add', short_help='add an answer to a record')
+@answer.command('add', short_help='Add an answer to a record')
 @write_options
 @record_arguments
 @click.option('--mx_priority', type=int, required=False, multiple=True,
@@ -387,8 +364,8 @@ def add(ctx, mx_priority, answer):
 
     try:
         record = ctx.obj.rest.loadRecord(ctx.obj.DOMAIN,
-                                          ctx.obj.TYPE,
-                                          zone=ctx.obj.ZONE)
+                                         ctx.obj.TYPE,
+                                         zone=ctx.obj.ZONE)
         record = record.addAnswers(answer)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
@@ -440,14 +417,14 @@ def add(ctx, mx_priority, answer):
 #     pass
 
 
-@answer.command('meta-set', short_help='set meta data key/value to an answer')
+@answer.command('meta-set', short_help='Set meta key-value pair for an answer')
 @write_options
 @record_arguments
 @click.argument('ANSWER')
-@click.argument('METAKEY')
-@click.argument('METAVAL')
+@click.argument('KEY')
+@click.argument('VAL')
 @click.pass_context
-def answer_meta_set(ctx, metaval, metakey, answer):
+def answer_meta_set(ctx, val, key, answer):
     """Set meta data KEY/VALUE pairs for an ANSWER. See ns1 list meta types
 
     \b
@@ -472,7 +449,7 @@ def answer_meta_set(ctx, metaval, metakey, answer):
         if a['answer'][0] == answer:
             if not _has_meta(a):
                 a['meta'] = {}
-            a['meta'][metakey] = metaval
+            a['meta'][key] = val
 
             found = True
             break
@@ -494,13 +471,13 @@ def answer_meta_set(ctx, metaval, metakey, answer):
     ctx.obj.formatter.print_record(rdata)
 
 
-@answer.command('meta-remove', short_help='remove meta data key from an answer')
+@answer.command('meta-remove', short_help='Remove meta key from an answer')
 @write_options
 @record_arguments
 @click.argument('ANSWER')
-@click.argument('METAKEY')
+@click.argument('KEY')
 @click.pass_context
-def answer_meta_remove(ctx, metakey, answer):
+def answer_meta_remove(ctx, key, answer):
     """Remove a meta data KEY/VALUE pair from an ANSWER.
 
     \b
@@ -523,13 +500,13 @@ def answer_meta_remove(ctx, metakey, answer):
             if not _has_meta(a):
                 raise click.BadParameter('%s has no meta' % answer)
             try:
-                del a['meta'][metakey]
+                del a['meta'][key]
                 # Remove the meta attr from answer if empty
                 if not a['meta']:
                     del a['meta']
             except KeyError:
                 raise click.BadParameter(
-                    '%s missing metadata key %s' % (answer, metakey))
+                    '%s missing metadata key %s' % (answer, key))
 
     try:
         rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,
@@ -561,8 +538,8 @@ def answer_meta_remove(ctx, metakey, answer):
 #     """
 #     pass
 
-@cli.group('region', chain=True, invoke_without_command=True,
-           short_help='view and modify a records answers')
+@cli.group('region', invoke_without_command=True,
+           short_help='View and modify a records answers')
 @click.pass_context
 def region(ctx):
     """View and modify record region data
@@ -570,7 +547,7 @@ def region(ctx):
     pass
 
 
-@region.command('add', short_help='add a region to a record')
+@region.command('add', short_help='Add a region to a record')
 @write_options
 @record_arguments
 @click.argument('REGION')
@@ -613,7 +590,7 @@ def add(ctx, region):
     ctx.obj.formatter.print_record(rdata)
 
 
-@region.command('remove', short_help='remove a region from a record')
+@region.command('remove', short_help='Remove a region from a record')
 @write_options
 @record_arguments
 @click.argument('REGION')
@@ -660,14 +637,14 @@ def remove(ctx, region):
 
 
 @region.command('meta-set',
-                short_help='set meta data key/value to a region')
+                short_help='Set meta key-value pair for a region')
 @write_options
 @record_arguments
 @click.argument('REGION')
-@click.argument('METAKEY')
-@click.argument('METAVAL')
+@click.argument('KEY')
+@click.argument('VAL')
 @click.pass_context
-def region_meta_set(ctx, metaval, metakey, region):
+def region_meta_set(ctx, val, key, region):
     """Set a meta data KEY/VALUE for a REGION. See ns1 list meta types
 
     \b
@@ -691,7 +668,7 @@ def region_meta_set(ctx, metaval, metakey, region):
             found = True
             if not _has_meta(current['regions'][reg]['meta']):
                 current['regions'][reg]['meta'] = {}
-            current['regions'][reg]['meta'][metakey] = metaval
+            current['regions'][reg]['meta'][key] = val
 
     if not found:
         raise click.BadParameter(
@@ -711,13 +688,13 @@ def region_meta_set(ctx, metaval, metakey, region):
 
 
 @region.command('meta-remove',
-                short_help='remove meta data key from a region')
+                short_help='Remove meta key from a region')
 @write_options
 @record_arguments
 @click.argument('REGION')
-@click.argument('METAKEY')
+@click.argument('KEY')
 @click.pass_context
-def region_meta_remove(ctx, metakey, region):
+def region_meta_remove(ctx, key, region):
     """Remove a meta data KEY from a REGION.
 
     \b
@@ -742,10 +719,10 @@ def region_meta_remove(ctx, metakey, region):
         raise click.BadParameter(
             'region %s has no meta to remove' % region)
     try:
-        del current['regions'][region]['meta'][metakey]
+        del current['regions'][region]['meta'][key]
     except KeyError:
         raise click.BadParameter(
-            'region %s has no metakey %s' % (region, metakey))
+            'region %s has no metakey %s' % (region, key))
 
     try:
         rdata = ctx.obj.record_api.update(ctx.obj.ZONE, ctx.obj.DOMAIN,

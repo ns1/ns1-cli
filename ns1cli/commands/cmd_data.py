@@ -24,23 +24,23 @@ class DataFormatter(Formatter):
 
 
 @click.group('data',
-             short_help='view and modify data sources/feeds')
+             short_help='View and modify data sources/feeds')
 @click.pass_context
 def cli(ctx):
     """Create, retrieve, update, and delete data sources/feeds."""
     ctx.obj.formatter = DataFormatter(ctx.obj.get_config('output_format'))
 
 
-@cli.group('source', short_help='view and modify data sources')
+@cli.group('source', short_help='View and modify data sources')
 @click.pass_context
 def source(ctx):
     """View and modify data sources."""
     ctx.obj.datasource_api = ctx.obj.rest.datasource()
 
 
-@source.command('list', short_help='list all data sources')
+@source.command('list', short_help='List all data sources')
 @click.option('--include', multiple=True,
-              help='display additional data',
+              help='Display additional data',
               type=click.Choice(['id', 'sourcetype']))
 @click.pass_context
 def list(ctx, include):
@@ -72,7 +72,7 @@ def list(ctx, include):
         ctx.obj.formatter.out('')
 
 
-@source.command('info', short_help='get data source details')
+@source.command('info', short_help='Get data source details')
 @click.argument('SOURCEID')
 @click.pass_context
 def info(ctx, sourceid):
@@ -96,9 +96,9 @@ def info(ctx, sourceid):
     ctx.obj.formatter.print_source(sdata)
 
 
-@source.command('create', short_help='create a new data source')
+@source.command('create', short_help='Create a new data source')
 @click.option('--config', type=(str, str), multiple=True,
-              help='set data source config value')
+              help='Set data source config value')
 @write_options
 @click.argument('SOURCETYPE', type=click.Choice(['nsone_v1', 'monitis', 'a10',
                                                  'nsone_monitoring', 'pingdom',
@@ -142,7 +142,7 @@ def create(ctx, name, sourcetype, config):
     ctx.obj.formatter.print_source(sdata)
 
 
-@source.command('delete', short_help='delete a data source')
+@source.command('delete', short_help='Delete a data source')
 @click.argument('SOURCEID')
 @write_options
 @click.pass_context
@@ -165,16 +165,16 @@ def delete(ctx, sourceid):
         raise click.ClickException('REST API: %s' % e.message)
 
 
-@cli.group('feed', short_help='view and modify data feeds')
+@cli.group('feed', short_help='View and modify data feeds')
 @click.pass_context
 def feed(ctx):
     """View and modify data feeds."""
     ctx.obj.datafeed_api = ctx.obj.rest.datafeed()
 
 
-@feed.command('list', short_help='list all data feeds for a data source')
+@feed.command('list', short_help='List all data feeds for a data source')
 @click.option('--include', multiple=True,
-              help='display additional data',
+              help='Display additional data',
               type=click.Choice(['id', 'destinations']))
 @click.argument('SOURCEID')
 @click.pass_context
@@ -215,7 +215,7 @@ def list(ctx, sourceid, include):
         ctx.obj.formatter.out('')
 
 
-@feed.command('info', short_help='get data feed details')
+@feed.command('info', short_help='Get data feed details')
 @click.argument('SOURCEID')
 @click.argument('FEEDID')
 @click.pass_context
@@ -240,9 +240,9 @@ def info(ctx, sourceid, feedid):
     ctx.obj.formatter.print_feed(fdata)
 
 
-@feed.command('create', short_help='create a new data feed')
+@feed.command('create', short_help='Create a new data feed')
 @click.option('--config', type=(str, str), multiple=True,
-              help='set a data feed config value')
+              help='Set a data feed config value')
 @write_options
 @click.argument('SOURCEID')
 @click.argument('NAME')

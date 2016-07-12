@@ -1,4 +1,6 @@
 import click
+from nsone.rest.resource import ResourceException
+
 from ns1cli.cli import cli, State
 from ns1cli.util import Formatter
 
@@ -47,7 +49,7 @@ def record_arguments(f):
     return f
 
 
-@click.group('stats', short_help='view usage/qps on zones and records')
+@click.group('stats', short_help='View usage/qps on zones and records')
 @click.pass_context
 def cli(ctx):
     """Get usage/qps on zones and records"""
@@ -55,7 +57,7 @@ def cli(ctx):
     ctx.obj.stats_api = ctx.obj.rest.stats()
 
 
-@cli.command('qps', short_help='retrieve real time queries per second')
+@cli.command('qps', short_help='Retrieve real time queries per second')
 @click.argument('ZONE', required=False, metavar='[ZONE]')
 @click.argument('DOMAIN', required=False, metavar='[[DOMAIN')
 @click.argument('TYPE', required=False, metavar='TYPE]]')
@@ -64,13 +66,12 @@ def qps(ctx, type, domain, zone):
     """Retrieve real time queries per second for a zone or a record.
 
     \b
-    ARGUMENTS:
-       ZONE    If specified, statistics are limited to this zone. If not
-               specified, then statistics are account-wide.
-       TYPE    DNS record type (e.g., A, CNAME, MX ...). Requires ZONE
-               and <domain>
-       DOMAIN  Limit statistics to the specified FQDN. Requires ZONE
-               and <type>
+    If no arguments are given, then statistics are account-wide.
+
+    If ZONE is given, statistics are limited to this zone.
+
+    If DOMAIN and TYPE are both given, then the statistics are limited
+    to the given FQDN.
 
     \b
     EXAMPLES:
@@ -92,7 +93,10 @@ def qps(ctx, type, domain, zone):
         kwargs['domain'] = domain
         kwargs['type'] = type
 
-    qps = ctx.obj.stats_api.qps(**kwargs)
+    try:
+        qps = ctx.obj.stats_api.qps(**kwargs)
+    except ResourceException as e:
+        raise click.ClickException('REST API: %s' % e.message)
 
     if ctx.obj.formatter.output_format == 'json':
         ctx.obj.formatter.out_json(qps)

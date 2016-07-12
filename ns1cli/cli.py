@@ -117,10 +117,13 @@ class State(object):
 
         if opts.get('api_key_id'):
             cfg.useKeyId(opts['api_key_id'])
+
         if opts.get('endpoint'):
             cfg['endpoint'] = opts['endpoint']
+
         if opts.get('transport'):
             cfg['transport'] = opts['transport']
+
         if opts.get('ignore_ssl'):
             cfg['ignore-ssl-errors'] = opts['ignore_ssl']
 
@@ -129,6 +132,7 @@ class State(object):
             from requests.packages.urllib3.exceptions import InsecureRequestWarning
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+        # Store the cli cfg dict as an attr of the rest config instance.
         for k, v in self.cfg.items():
             cfg['cli'][k] = v
 
@@ -144,9 +148,8 @@ def verbosity_option(f):
         state.cfg['verbosity'] = value
         return value
     return click.option('-v', count=True,
-                        show_default=True,
                         expose_value=False,
-                        help='Verbosity',
+                        help='Verbosity level',
                         callback=callback)(f)
 
 
@@ -157,9 +160,8 @@ def debug_option(f):
         return value
     return click.option('--debug',
                         is_flag=True,
-                        show_default=True,
                         expose_value=False,
-                        help='Enables debug mode',
+                        help='Enable debug mode',
                         callback=callback)(f)
 
 
@@ -168,8 +170,7 @@ def output_format_option(f):
         state = ctx.ensure_object(State)
         state.cfg['output_format'] = value
         return value
-    return click.option('-o', '--output',
-                        show_default=True,
+    return click.option('--output',
                         type=click.Choice(['text', 'json']),
                         expose_value=False,
                         help='Display format',
@@ -189,10 +190,10 @@ def force_option(f):
         state = ctx.ensure_object(State)
         state.cfg['force'] = value
         return value
-    return click.option('-f/--force',
+    return click.option('-f', '--force',
                         expose_value=False,
                         is_flag=True,
-                        help='Force: override the write lock if one exists',
+                        help='Force override the write lock if one exists',
                         callback=callback)(f)
 
 
@@ -221,7 +222,7 @@ def api_key_option(f):
         return value
     return click.option('-k', '--key',
                         expose_value=False,
-                        help='Use the specified API Key',
+                        help='Use the specified api key',
                         callback=callback)(f)
 
 
@@ -232,7 +233,7 @@ def api_key_id_option(f):
         return value
     return click.option('--key_id',
                         expose_value=False,
-                        help='Use the specified API Key ID',
+                        help='Use the specified api key id',
                         callback=callback)(f)
 
 
@@ -254,7 +255,7 @@ def transport_option(f):
         return value
     return click.option('--transport',
                         expose_value=False,
-                        help='Client transport',
+                        help='Use the specified client transport',
                         default='requests',
                         type=click.Choice(['basic', 'requests']),
                         callback=callback)(f)
@@ -267,18 +268,18 @@ def ignore_ssl_option(f):
         return value
     return click.option('--ignore-ssl-errors',
                         expose_value=False,
-                        help='Ignore SSL certificate errors',
+                        help='Ignore ssl certificate errors',
                         is_flag=True,
                         default=False,
                         callback=callback)(f)
 
 
 def ns1_client_options(f):
-    f = config_path_option(f)
-    f = api_key_option(f)
-    f = endpoint_option(f)
-    f = api_key_id_option(f)
     f = transport_option(f)
+    f = config_path_option(f)
+    f = endpoint_option(f)
+    f = api_key_option(f)
+    f = api_key_id_option(f)
     f = ignore_ssl_option(f)
     return f
 

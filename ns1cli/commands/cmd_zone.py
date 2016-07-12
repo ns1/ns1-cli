@@ -24,7 +24,7 @@ class ZoneFormatter(Formatter):
 
 
 @click.group('zone',
-             short_help='view and modify zone SOA data')
+             short_help='View and modify zone soa data')
 @click.pass_context
 def cli(ctx):
     """Create, retrieve, update, and delete zone SOA data"""
@@ -32,7 +32,7 @@ def cli(ctx):
     ctx.obj.zone_api = ctx.obj.rest.zones()
 
 
-@cli.command('list', short_help='list all active zones')
+@cli.command('list', short_help='List all active zones')
 @click.pass_context
 def list(ctx):
     """Returns all active zones and basic zone configuration details
@@ -56,7 +56,7 @@ def list(ctx):
         ctx.obj.formatter.out('  ' + z['zone'])
 
 
-@cli.command('info', short_help='get zone details')
+@cli.command('info', short_help='Get zone details')
 @click.argument('zone')
 @click.pass_context
 def info(ctx, zone):
@@ -80,7 +80,7 @@ def info(ctx, zone):
     ctx.obj.formatter.print_zone(zdata)
 
 
-@cli.command('create', short_help='create a new zone')
+@cli.command('create', short_help='Create a new zone')
 @click.argument('zone')
 @write_options
 @click.option('--link', help='Create linked zone pointing to given zone', type=str)
@@ -153,7 +153,7 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
     ctx.obj.formatter.print_zone(zdata)
 
 
-@cli.command('set', short_help='update zone attributes')
+@cli.command('set', short_help='Update zone attributes')
 @click.argument('zone')
 @write_options
 @click.option('--refresh', help='SOA Refresh', type=int)
@@ -200,7 +200,7 @@ def set(ctx, nx_ttl, expiry, retry, refresh, zone):
 
 
 @cli.command('delete',
-             short_help='delete a zone and all records it contains')
+             short_help='Delete a zone and all records it contains')
 @click.argument('zone')
 @write_options
 @click.pass_context

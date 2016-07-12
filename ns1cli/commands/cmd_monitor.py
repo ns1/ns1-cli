@@ -25,7 +25,7 @@ class MonitorFormatter(Formatter):
 
 
 @click.group('monitor',
-             short_help='view monitoring jobs')
+             short_help='View monitoring jobs')
 @click.pass_context
 def cli(ctx):
     """View monitoring jobs."""
@@ -33,7 +33,7 @@ def cli(ctx):
     ctx.obj.monitor_api = ctx.obj.rest.monitors()
 
 
-@cli.command('list', short_help='list all active monitors')
+@cli.command('list', short_help='List all active monitors')
 @click.option('--include', multiple=True,
               help='Display additional data',
               type=click.Choice(['id', 'job_type']))
@@ -70,7 +70,7 @@ def list(ctx, include):
         ctx.obj.formatter.out('')
 
 
-@cli.command('info', short_help='get monitor details')
+@cli.command('info', short_help='Get monitor details')
 @click.argument('JOBID')
 @click.pass_context
 def info(ctx, jobid):

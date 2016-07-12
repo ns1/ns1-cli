@@ -20,14 +20,14 @@ class ConfigFormatter(Formatter):
 
 
 @click.group('config',
-             short_help='view and modify local configuration settings')
+             short_help='View and modify local configuration settings')
 @click.pass_context
 def cli(ctx):
     """View and manipulate configuration settings"""
     ctx.obj.formatter = ConfigFormatter(ctx.obj.get_config('output_format'))
 
 
-@cli.command('show', short_help='show the existing config')
+@cli.command('show', short_help='Show the existing config')
 @click.pass_context
 def show(ctx):
     """Show the existing config
@@ -43,7 +43,7 @@ def show(ctx):
     ctx.obj.formatter.print_config(ctx.obj.rest.config)
 
 
-@cli.command('set', short_help='set the configuration key-value')
+@cli.command('set', short_help='Set the configuration key-value pair')
 @click.argument('KEY')
 @click.argument('VALUE')
 @click.pass_context
@@ -64,7 +64,7 @@ def set(ctx, value, key):
     ctx.obj.formatter.print_config(ctx.obj.rest.config)
 
 
-@cli.command('key', short_help='set the active configuration key ID')
+@cli.command('key', short_help='Set the active configuration key id')
 @click.argument('KEYID')
 @click.pass_context
 def key(ctx, keyid):
@@ -87,7 +87,7 @@ def key(ctx, keyid):
         raise click.ClickException(e.message)
 
 
-@cli.command('save', short_help='save the current config')
+@cli.command('save', short_help='Save the current config')
 @click.argument('PATH', required=False)
 @click.pass_context
 def key(ctx, path):
