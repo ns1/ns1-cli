@@ -46,14 +46,14 @@ def list(ctx):
         zlist = ctx.obj.zone_api.list()
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(zlist)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(zlist)
-        return
-
-    click.secho('ZONES:', bold=True)
-    for z in zlist:
-        ctx.obj.formatter.out('  ' + z['zone'])
+        click.secho('ZONES:', bold=True)
+        for z in zlist:
+            ctx.obj.formatter.out('  ' + z['zone'])
 
 
 @cli.command('info', short_help='Get zone details')
@@ -72,12 +72,12 @@ def info(ctx, zone):
         zdata = ctx.obj.zone_api.retrieve(zone)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(zdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(zdata)
-        return
-
-    ctx.obj.formatter.print_zone(zdata)
+        ctx.obj.formatter.print_zone(zdata)
 
 
 @cli.command('create', short_help='Create a new zone')
@@ -145,12 +145,12 @@ def create(ctx, nx_ttl, expiry, retry, refresh, link, zone):
         zdata = ctx.obj.zone_api.create(zone, **options)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(zdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(zdata)
-        return
-
-    ctx.obj.formatter.print_zone(zdata)
+        ctx.obj.formatter.print_zone(zdata)
 
 
 @cli.command('set', short_help='Update zone attributes')
@@ -191,12 +191,12 @@ def set(ctx, nx_ttl, expiry, retry, refresh, zone):
         zdata = ctx.obj.zone_api.update(zone, **options)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(zdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(zdata)
-        return
-
-    ctx.obj.formatter.print_zone(zdata)
+        ctx.obj.formatter.print_zone(zdata)
 
 
 @cli.command('delete',
@@ -220,4 +220,6 @@ def delete(ctx, zone):
         ctx.obj.zone_api.delete(zone)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        click.echo('{} deleted'.format(zone))
 

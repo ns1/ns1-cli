@@ -55,19 +55,19 @@ def list(ctx, include):
         mlist = ctx.obj.monitor_api.list()
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(mlist)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(mlist)
-        return
-
-    click.secho('MONITORS:', bold=True)
-    for m in mlist:
-        ctx.obj.formatter.out('  name: ' + m['name'])
-        if 'id' in include:
-            ctx.obj.formatter.out('  id: ' + m['id'])
-        if 'job_type' in include:
-            ctx.obj.formatter.out('  job_type: ' + m['job_type'])
-        ctx.obj.formatter.out('')
+        click.secho('MONITORS:', bold=True)
+        for m in mlist:
+            ctx.obj.formatter.out('  name: ' + m['name'])
+            if 'id' in include:
+                ctx.obj.formatter.out('  id: ' + m['id'])
+            if 'job_type' in include:
+                ctx.obj.formatter.out('  job_type: ' + m['job_type'])
+            ctx.obj.formatter.out('')
 
 
 @cli.command('info', short_help='Get monitor details')
@@ -88,9 +88,9 @@ def info(ctx, jobid):
         mdata = ctx.obj.monitor_api.retrieve(jobid)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(mdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(mdata)
-        return
-
-    ctx.obj.formatter.print_monitor(mdata)
+        ctx.obj.formatter.print_monitor(mdata)

@@ -88,12 +88,12 @@ def info(ctx, sourceid):
         sdata = ctx.obj.datasource_api.retrieve(sourceid)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(sdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(sdata)
-        return
-
-    ctx.obj.formatter.print_source(sdata)
+        ctx.obj.formatter.print_source(sdata)
 
 
 @source.command('create', short_help='Create a new data source')
@@ -134,12 +134,12 @@ def create(ctx, name, sourcetype, config):
         sdata = ctx.obj.datasource_api.create(name, sourcetype, **options)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(sdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(sdata)
-        return
-
-    ctx.obj.formatter.print_source(sdata)
+        ctx.obj.formatter.print_source(sdata)
 
 
 @source.command('delete', short_help='Delete a data source')
@@ -163,6 +163,8 @@ def delete(ctx, sourceid):
         ctx.obj.datasource_api.delete(sourceid)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        click.echo('{} deleted'.format(sourceid))
 
 
 @cli.group('feed', short_help='View and modify data feeds')
@@ -195,24 +197,24 @@ def list(ctx, sourceid, include):
         flist = ctx.obj.datafeed_api.list(sourceid)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(flist)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(flist)
-        return
-
-    click.secho('DATAFEEDS:', bold=True)
-    for f in flist:
-        ctx.obj.formatter.out('  name: ' + f['name'])
-        if 'id' in include:
-            ctx.obj.formatter.out('  id: ' + f['id'])
-        if 'destinations' in include:
-            if not f['destinations']:
-                click.secho('  destinations: {}')
-            else:
-                ctx.obj.formatter.out('  destinations:')
-                for d in f['destinations']:
-                    ctx.obj.formatter.pretty_print(d, 4)
-        ctx.obj.formatter.out('')
+        click.secho('DATAFEEDS:', bold=True)
+        for f in flist:
+            ctx.obj.formatter.out('  name: ' + f['name'])
+            if 'id' in include:
+                ctx.obj.formatter.out('  id: ' + f['id'])
+            if 'destinations' in include:
+                if not f['destinations']:
+                    click.secho('  destinations: {}')
+                else:
+                    ctx.obj.formatter.out('  destinations:')
+                    for d in f['destinations']:
+                        ctx.obj.formatter.pretty_print(d, 4)
+            ctx.obj.formatter.out('')
 
 
 @feed.command('info', short_help='Get data feed details')
@@ -232,12 +234,12 @@ def info(ctx, sourceid, feedid):
         fdata = ctx.obj.datafeed_api.retrieve(sourceid, feedid)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(fdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(fdata)
-        return
-
-    ctx.obj.formatter.print_feed(fdata)
+        ctx.obj.formatter.print_feed(fdata)
 
 
 @feed.command('create', short_help='Create a new data feed')
@@ -266,9 +268,9 @@ def create(ctx, sourceid, name, config):
         fdata = ctx.obj.datafeed_api.create(sourceid, name, cfg)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(fdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(fdata)
-        return
-
-    ctx.obj.formatter.print_feed(fdata)
+        ctx.obj.formatter.print_feed(fdata)

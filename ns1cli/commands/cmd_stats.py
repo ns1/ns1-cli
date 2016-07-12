@@ -97,12 +97,12 @@ def qps(ctx, type, domain, zone):
         qps = ctx.obj.stats_api.qps(**kwargs)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(qps)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(qps)
-        return
-
-    ctx.obj.formatter.print_qps(kwargs, qps)
+        ctx.obj.formatter.print_qps(kwargs, qps)
 
 
 # @cli.command('usage', short_help='usage ..',

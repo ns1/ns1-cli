@@ -108,12 +108,12 @@ def info(ctx):
                                             ctx.obj.TYPE)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 @cli.command('create',
@@ -204,12 +204,12 @@ def create(ctx, answers, mx_priority, use_client_subnet, ttl, target):
                                           ctx.obj.TYPE, **options)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 @cli.command('delete', short_help='Delete a record')
@@ -236,6 +236,8 @@ def delete(ctx):
         ctx.obj.record_api.delete(ctx.obj.ZONE, ctx.obj.DOMAIN, ctx.obj.TYPE)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        click.echo('{} deleted'.format(ctx.obj.DOMAIN))
 
 
 # META
@@ -277,12 +279,12 @@ def meta_set(ctx, val, key):
                                           ctx.obj.TYPE, meta=current['meta'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 @meta.command('remove', short_help='Remove meta data key from a record')
@@ -320,12 +322,12 @@ def meta_remove(ctx, key):
                                           ctx.obj.TYPE, meta=current['meta'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 # ANSWERS
@@ -369,12 +371,12 @@ def add(ctx, mx_priority, answer):
         record = record.addAnswers(answer)
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(record.data)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(record.data)
-        return
-
-    ctx.obj.formatter.print_record(record.data)
+        ctx.obj.formatter.print_record(record.data)
 
 
 # @answer.command('remove', short_help='remove an answer from a record')
@@ -463,12 +465,12 @@ def answer_meta_set(ctx, val, key, answer):
                                           ctx.obj.TYPE, answers=current['answers'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 @answer.command('meta-remove', short_help='Remove meta key from an answer')
@@ -513,12 +515,12 @@ def answer_meta_remove(ctx, key, answer):
                                           ctx.obj.TYPE, answers=current['answers'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 # REGIONS
@@ -582,12 +584,12 @@ def add(ctx, region):
                                           ctx.obj.TYPE, regions=current['regions'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 @region.command('remove', short_help='Remove a region from a record')
@@ -628,12 +630,12 @@ def remove(ctx, region):
                                           ctx.obj.TYPE, regions=current['regions'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 @region.command('meta-set',
@@ -679,12 +681,12 @@ def region_meta_set(ctx, val, key, region):
                                           ctx.obj.TYPE, regions=current['regions'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
 
 
 @region.command('meta-remove',
@@ -729,9 +731,9 @@ def region_meta_remove(ctx, key, region):
                                           ctx.obj.TYPE, regions=current['regions'])
     except ResourceException as e:
         raise click.ClickException('REST API: %s' % e.message)
+    else:
+        if ctx.obj.formatter.output_format == 'json':
+            ctx.obj.formatter.out_json(rdata)
+            return
 
-    if ctx.obj.formatter.output_format == 'json':
-        ctx.obj.formatter.out_json(rdata)
-        return
-
-    ctx.obj.formatter.print_record(rdata)
+        ctx.obj.formatter.print_record(rdata)
