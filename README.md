@@ -45,7 +45,7 @@ See `ns1 <command> --help` for more information on a specific command.
 Installation
 ============
 
-__From Pypi__:
+__From PyPI__:
 
 ```bash
 $ pip install ns1cli
@@ -78,6 +78,7 @@ __ns1cli uses the [NS1 python client](https://github.com/ns1/nsone-python) to co
 
 - REPL:
 	- Autocomplete commands
+	- `cmd <subcmd> help` is missing the command/subcommands in the help output.
 
 - Search:
 	- Autocomplete ZONE/DOMAIN/TYPE arguments.
@@ -88,6 +89,14 @@ __ns1cli uses the [NS1 python client](https://github.com/ns1/nsone-python) to co
    - Missing create zone attributes:
       - networks
       - secondary attrs(primary ip, primary_port)
+   - Both `answer` and `region` `meta` subcommands are inconsistent:
+      - `ns1 record answer meta-set` and `ns1 record answer meta-remove`
+      - `ns1 record region meta-set` and `ns1 record region meta-remove`
+      
+      - The `meta` subcommands will be fixed when Click 7.0 is released:
+      	- `ns1 record answer meta set` and `ns1 record answer meta remove`
+      	- `ns1 record region meta set` and `ns1 record region meta remove`
+
       
 - Record:
    - Update/Set record level attributes(TTL, RETRY, etc)
@@ -97,3 +106,4 @@ __ns1cli uses the [NS1 python client](https://github.com/ns1/nsone-python) to co
      
 - Data:
 	- Add `ns1 data feed publish` command
+
