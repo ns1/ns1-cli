@@ -15,21 +15,24 @@ Usage: ns1 [OPTIONS] COMMAND [ARGS]...
   interactive commands.
 
 Options:
-  --ignore-ssl-errors           Ignore SSL certificate errors
-  --transport [basic|requests]  Client transport
+  -v                            Verbosity level
+  --debug                       Enable debug mode
+  --output [text|json]          Display format
+  --ignore-ssl-errors           Ignore ssl certificate errors
+  --key_id TEXT                 Use the specified api key id
+  -k, --key TEXT                Use the specified api key
   -e, --endpoint TEXT           Use the specified server endpoint
-  --key_id TEXT                 Use the specified API Key ID
-  -k, --key TEXT                Use the specified API Key
   -c, --config_path PATH        Use the specified config file
+  --transport [basic|requests]  Use the specified client transport
   -h, --help                    Show this message and exit.
 
 Commands:
-  config   view and modify local configuration settings
-  data     view and modify data sources/feeds
-  monitor  view monitoring jobs
+  config   View and modify local configuration settings
+  data     View and modify data sources/feeds
+  monitor  View monitoring jobs
   record   view and modify records in a zone
-  stats    view usage/qps on zones and records
-  zone     view and modify zone SOA data
+  stats    View usage/qps on zones and records
+  zone     View and modify zone soa data
 ```
 
 See `ns1 <command> --help` for more information on a specific command.
@@ -66,31 +69,31 @@ Configuration
 
 __ns1cli uses the [NS1 python client](https://github.com/ns1/nsone-python) to communicate with the [NS1 API](https://ns1.com/api/).__
 
-ns1cli will by default attempt to load a configuration file from `$HOME/.ns1/config`.
-
- - The configuration object used comes from the underlying NS1 python client.
+ - ns1cli will by default attempt to load a configuration file from `$HOME/.ns1/config`
+ - The configuration object used comes from the underlying NS1 python client
+ - A history file for the REPL is saved at `$HOME/.ns1/ns1_history`
 
 
 ## TODO:
 
-- REPL
+- REPL:
 	- Autocomplete commands
 
-- Search
+- Search:
 	- Autocomplete ZONE/DOMAIN/TYPE arguments.
 
-- Zones
+- Zone:
    - Create secondary zones
    - Create zone from importing zonefile
    - Missing create zone attributes:
       - networks
       - secondary attrs(primary ip, primary_port)
       
-- Record
+- Record:
    - Update/Set record level attributes(TTL, RETRY, etc)
    
    - Answers
      - implement `ns1 record answer remove`
      
-
-
+- Data:
+	- Add `ns1 data feed publish` command
