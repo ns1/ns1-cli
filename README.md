@@ -2,7 +2,7 @@ NS1 Command Line Interface (CLI)
 ==================================
 
 > Please note:
-> **At this time, the `NS1 CLI` package is [INACTIVE](https://github.com/ns1/community/blob/master/project_status/INACTIVE.md) and is
+> **At this time, the `NS1 CLI` package is [DEPRECATED](https://github.com/ns1/community/blob/master/project_status/DEPRECATED.md) and is
 > not feature complete. We suggest using one of our other packages for
 > production integrations.**
 
